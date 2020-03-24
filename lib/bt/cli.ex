@@ -2,7 +2,7 @@ defmodule Bt.CLI do
   use ExCLI.DSL, escript: true
   alias Bt.CLI.Config
 
-  name "mycli"
+  name "bt"
   description "Bluetooth CLI"
   long_description """
   Handling bluetooth devices from the shell
@@ -15,10 +15,11 @@ defmodule Bt.CLI do
     Connect bluetooth device
     """
 
-    argument :device
+    argument :alias
 
     run context do
-      {_res, code} = System.cmd("bluetoothctl", ["connect", context.device])
+      aliases = Config.read_aliases()
+      {_res, code} = System.cmd("bluetoothctl", ["connect", aliases[context.alias]])
       if code == 0 do
         IO.puts("Device was successfully connected")
       else
@@ -34,10 +35,11 @@ defmodule Bt.CLI do
     Disconnect bluetooth device
     """
 
-    argument :device
+    argument :alias
 
     run context do
-      {_res, code} = System.cmd("bluetoothctl", ["disconnect", context.device])
+      aliases = Config.read_aliases()
+      {_res, code} = System.cmd("bluetoothctl", ["disconnect", aliases[context.alias]])
       if code == 0 do
         IO.puts("Device was successfully disconnected")
       else
@@ -54,7 +56,7 @@ defmodule Bt.CLI do
         %{},
         fn x, acc ->
           [_, mac, name] = x |> String.split(" ", parts: 3)
-          acc |> Map.put(name, mac)
+          acc |> Map.put(mac, name)
         end
       )
   end
@@ -93,12 +95,13 @@ defmodule Bt.CLI do
 
     run context do
       {res, _code} = System.cmd("bluetoothctl", ["devices"])
+      devices = res |> parse_list()
       aliases = Config.read_aliases()
-      res
-      |> parse_list()
+
+      aliases
       |> Enum.map(
-        fn {k, v} ->
-          {aliases[v], k}
+        fn {name, mac} ->
+          {name, devices[mac]}
         end
       )
       |> Enum.into(%{})
