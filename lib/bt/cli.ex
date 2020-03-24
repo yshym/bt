@@ -18,7 +18,7 @@ defmodule Bt.CLI do
     argument :alias
 
     run context do
-      aliases = Config.read_aliases()
+      aliases = Config.swapped_aliases()
       {_res, code} = System.cmd("bluetoothctl", ["connect", aliases[context.alias]])
       if code == 0 do
         IO.puts("Device was successfully connected")
@@ -38,7 +38,7 @@ defmodule Bt.CLI do
     argument :alias
 
     run context do
-      aliases = Config.read_aliases()
+      aliases = Config.swapped_aliases()
       {_res, code} = System.cmd("bluetoothctl", ["disconnect", aliases[context.alias]])
       if code == 0 do
         IO.puts("Device was successfully disconnected")
@@ -68,11 +68,11 @@ defmodule Bt.CLI do
     List bluetooth devices
     """
 
-    run context do
+    run _context do
       {res, _code} = System.cmd("bluetoothctl", ["devices"])
       res
       |> response_list_to_map()
-      |> Enum.map(fn {mac, name} -> name end)
+      |> Enum.map(fn {_mac, name} -> name end)
       |> Enum.join("\n")
       |> IO.puts()
     end
@@ -85,35 +85,72 @@ defmodule Bt.CLI do
     List bluetooth adapters
     """
 
-    run context do
+    run _context do
       {res, _code} = System.cmd("bluetoothctl", ["list"])
       res
       |> response_list_to_map()
-      |> Enum.map(fn {mac, name} -> name end)
+      |> Enum.map(fn {_mac, name} -> name end)
       |> Enum.join("\n")
       |> IO.puts()
     end
   end
 
-  command :aliases do
+  command :alias do
     description "List aliases"
     long_description """
     List aliases of devices
     """
 
-    run context do
-      {res, _code} = System.cmd("bluetoothctl", ["devices"])
-      devices = response_list_to_map(res)
-      aliases = Config.read_aliases()
+    argument :action
 
-      aliases
-      |> Enum.map(
-        fn {name, mac} ->
-          "#{name} -> #{devices[mac]}"
-        end
-      )
-      |> Enum.join("\n")
-      |> IO.puts()
+    run context do
+      cond do
+        context.action == "ls" ->
+          {res, _code} = System.cmd("bluetoothctl", ["devices"])
+          devices = response_list_to_map(res)
+          aliases = Config.aliases()
+
+          aliases
+          |> Enum.map(
+            fn {mac, name} ->
+              "#{name} -> #{devices[mac]}"
+            end
+          )
+          |> Enum.join("\n")
+          |> IO.puts()
+
+        context.action == "add" ->
+          # List devices
+          {res, _code} = System.cmd("bluetoothctl", ["devices"])
+          devices = response_list_to_map(res)
+
+          devices
+          |> Enum.with_index()
+          |> Enum.map(fn {{_mac, name}, i} -> "#{i+1}. #{name}" end)
+          |> Enum.join("\n")
+          |> IO.puts()
+
+          # Choose device
+          id =
+            "Select device: "
+            |> IO.gets()
+            |> String.trim()
+            |> String.to_integer()
+            |> Kernel.-(1)
+
+          {mac, _name} = Enum.at(devices, id)
+
+          # Choose alias name
+          alias_name =
+            "Enter alias: "
+            |> IO.gets()
+            |> String.trim()
+
+          # Add alias
+          Config.aliases()
+          |> Map.put(mac, alias_name)
+          |> Config.write_aliases()
+      end
     end
   end
 end
