@@ -48,15 +48,15 @@ defmodule Bt.CLI do
     end
   end
 
-  def parse_list(list) do
+  def response_list_to_map(list) do
     list
       |> String.trim()
       |> String.split("\n")
       |> Enum.reduce(
         %{},
         fn x, acc ->
-          [_, mac, name] = x |> String.split(" ", parts: 3)
-          acc |> Map.put(mac, name)
+          [_, mac, name] = String.split(x, " ", parts: 3)
+          Map.put(acc, mac, name)
         end
       )
   end
@@ -70,7 +70,11 @@ defmodule Bt.CLI do
 
     run context do
       {res, _code} = System.cmd("bluetoothctl", ["devices"])
-      res |> parse_list() |> IO.inspect()
+      res
+      |> response_list_to_map()
+      |> Enum.map(fn {mac, name} -> name end)
+      |> Enum.join("\n")
+      |> IO.puts()
     end
   end
 
@@ -83,7 +87,11 @@ defmodule Bt.CLI do
 
     run context do
       {res, _code} = System.cmd("bluetoothctl", ["list"])
-      res |> parse_list() |> IO.inspect()
+      res
+      |> response_list_to_map()
+      |> Enum.map(fn {mac, name} -> name end)
+      |> Enum.join("\n")
+      |> IO.puts()
     end
   end
 
@@ -95,17 +103,17 @@ defmodule Bt.CLI do
 
     run context do
       {res, _code} = System.cmd("bluetoothctl", ["devices"])
-      devices = res |> parse_list()
+      devices = response_list_to_map(res)
       aliases = Config.read_aliases()
 
       aliases
       |> Enum.map(
         fn {name, mac} ->
-          {name, devices[mac]}
+          "#{name} -> #{devices[mac]}"
         end
       )
-      |> Enum.into(%{})
-      |> IO.inspect()
+      |> Enum.join("\n")
+      |> IO.puts()
     end
   end
 end
