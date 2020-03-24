@@ -61,6 +61,18 @@ defmodule Bt.CLI do
       )
   end
 
+  def map_of(type) do
+    {res, _code} =
+      System.cmd("bluetoothctl", [
+        case type do
+          "devices" -> "devices"
+          "adapters" -> "list"
+          _ -> raise(ArgumentError, "Wrong argument 'type'")
+        end
+      ])
+    response_list_to_map(res)
+  end
+
   command :devices do
     aliases [:devs]
     description "List devices"
@@ -69,9 +81,7 @@ defmodule Bt.CLI do
     """
 
     run _context do
-      {res, _code} = System.cmd("bluetoothctl", ["devices"])
-      res
-      |> response_list_to_map()
+      map_of("devices")
       |> Enum.map(fn {_mac, name} -> name end)
       |> Enum.join("\n")
       |> IO.puts()
@@ -86,9 +96,7 @@ defmodule Bt.CLI do
     """
 
     run _context do
-      {res, _code} = System.cmd("bluetoothctl", ["list"])
-      res
-      |> response_list_to_map()
+      map_of("adapters")
       |> Enum.map(fn {_mac, name} -> name end)
       |> Enum.join("\n")
       |> IO.puts()
@@ -104,11 +112,11 @@ defmodule Bt.CLI do
     argument :action
 
     run context do
+      devices = map_of("devices")
+      aliases = Config.aliases()
+
       cond do
         context.action == "ls" ->
-          {res, _code} = System.cmd("bluetoothctl", ["devices"])
-          devices = response_list_to_map(res)
-          aliases = Config.aliases()
 
           aliases
           |> Enum.map(
@@ -121,9 +129,6 @@ defmodule Bt.CLI do
 
         context.action == "add" ->
           # List devices
-          {res, _code} = System.cmd("bluetoothctl", ["devices"])
-          devices = response_list_to_map(res)
-
           devices
           |> Enum.with_index()
           |> Enum.map(fn {{_mac, name}, i} -> "#{i+1}. #{name}" end)
@@ -147,7 +152,7 @@ defmodule Bt.CLI do
             |> String.trim()
 
           # Add alias
-          Config.aliases()
+          aliases
           |> Enum.map(
             fn {name, mac} ->
               if mac == device_mac do
