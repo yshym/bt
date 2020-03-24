@@ -1,3 +1,4 @@
 %{
   "ex_cli": {:hex, :ex_cli, "0.1.6", "30f97ef0751c75863c669cf34ebb689a5a3ebf9dafd2e73739f173fbd7561a53", [:mix], [], "hexpm", "9b6e4e89f457f6805ae47a0fc0004bae804d894c85976dfd5b47330737dccf7b"},
+  "toml": {:hex, :toml, "0.6.1", "e1c3c91c1fc1ed87e7315a5a88e4bd1eeddf3e61dca2b708724a6a2d1a013844", [:mix], [], "hexpm", "d73b447d2605e23fa3bbbf80342e27e7e1bca51733d5e65c026d97c7e1a7cabb"},
 }

@@ -1,9 +1,10 @@
 defmodule Bt.CLI do
   use ExCLI.DSL, escript: true
+  alias Bt.CLI.Config
 
   name "mycli"
   description "Bluetooth CLI"
-  long_description ~s"""
+  long_description """
   Handling bluetooth devices from the shell
   """
 
@@ -50,10 +51,10 @@ defmodule Bt.CLI do
       |> String.trim()
       |> String.split("\n")
       |> Enum.reduce(
-        [],
+        %{},
         fn x, acc ->
           [_, mac, name] = x |> String.split(" ", parts: 3)
-          acc ++ [%{} |> Map.put(:mac, mac) |> Map.put(:name, name)]
+          acc |> Map.put(name, mac)
         end
       )
   end
@@ -81,6 +82,27 @@ defmodule Bt.CLI do
     run context do
       {res, _code} = System.cmd("bluetoothctl", ["list"])
       res |> parse_list() |> IO.inspect()
+    end
+  end
+
+  command :aliases do
+    description "List aliases"
+    long_description """
+    List aliases of devices
+    """
+
+    run context do
+      {res, _code} = System.cmd("bluetoothctl", ["devices"])
+      aliases = Config.read_aliases()
+      res
+      |> parse_list()
+      |> Enum.map(
+        fn {k, v} ->
+          {aliases[v], k}
+        end
+      )
+      |> Enum.into(%{})
+      |> IO.inspect()
     end
   end
 end

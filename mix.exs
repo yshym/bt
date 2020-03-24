@@ -20,7 +20,8 @@ defmodule Bt.MixProject do
 
   defp deps do
     [
-      {:ex_cli, "~> 0.1.6"}
+      {:ex_cli, "~> 0.1.6"},
+      {:toml, "~> 0.6.1"},
     ]
   end
 end
