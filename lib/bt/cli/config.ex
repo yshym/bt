@@ -10,23 +10,11 @@ defmodule Bt.CLI.Config do
     Map.get(read(), "aliases", %{})
   end
 
-  def swap(map) do
-    map
-    |> Enum.map(
-      fn {k, v} -> {v, k} end
-    )
-    |> Enum.into(%{})
-  end
-
-  def swapped_aliases do
-    swap(aliases())
-  end
-
   def write_aliases(aliases) do
     list =
       aliases
       |> Enum.map(
-        fn {mac, name} -> "\"#{mac}\" = \"#{name}\"" end
+        fn {name, mac} -> "#{name} = \"#{mac}\"" end
       )
       |> Enum.join("\n")
 

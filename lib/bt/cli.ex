@@ -18,7 +18,7 @@ defmodule Bt.CLI do
     argument :alias
 
     run context do
-      aliases = Config.swapped_aliases()
+      aliases = Config.aliases()
       {_res, code} = System.cmd("bluetoothctl", ["connect", aliases[context.alias]])
       if code == 0 do
         IO.puts("Device was successfully connected")
@@ -38,7 +38,7 @@ defmodule Bt.CLI do
     argument :alias
 
     run context do
-      aliases = Config.swapped_aliases()
+      aliases = Config.aliases()
       {_res, code} = System.cmd("bluetoothctl", ["disconnect", aliases[context.alias]])
       if code == 0 do
         IO.puts("Device was successfully disconnected")
@@ -112,7 +112,7 @@ defmodule Bt.CLI do
 
           aliases
           |> Enum.map(
-            fn {mac, name} ->
+            fn {name, mac} ->
               "#{name} -> #{devices[mac]}"
             end
           )
@@ -131,14 +131,14 @@ defmodule Bt.CLI do
           |> IO.puts()
 
           # Choose device
-          id =
+          device_id =
             "Select device: "
             |> IO.gets()
             |> String.trim()
             |> String.to_integer()
             |> Kernel.-(1)
 
-          {mac, _name} = Enum.at(devices, id)
+          {device_mac, _device_name} = Enum.at(devices, device_id)
 
           # Choose alias name
           alias_name =
@@ -148,7 +148,16 @@ defmodule Bt.CLI do
 
           # Add alias
           Config.aliases()
-          |> Map.put(mac, alias_name)
+          |> Enum.map(
+            fn {name, mac} ->
+              if mac == device_mac do
+                {alias_name, mac}
+              else
+                {name, mac}
+              end
+            end
+          )
+          |> Enum.into(%{})
           |> Config.write_aliases()
       end
     end
