@@ -63,10 +63,11 @@ defmodule Bt.CLI do
     end
   end
 
-  def response_list_to_map(list) do
-    list
-    |> String.trim()
-    |> String.split("\n")
+  def parse_output(:devices) do
+    {res, _code} = System.cmd("bluetoothctl", ["devices"])
+
+    res
+    |> String.split("\n", trim: true)
     |> Enum.reduce(
       %{},
       fn x, acc ->
@@ -75,17 +76,23 @@ defmodule Bt.CLI do
       end
     )
   end
+  def parse_output(:adapters) do
+    {res, _code} = System.cmd("bluetoothctl", ["list"])
 
-  def map_of(type) do
-    {res, _code} =
-      System.cmd("bluetoothctl", [
-        case type do
-          "devices" -> "devices"
-          "adapters" -> "list"
-          _ -> raise(ArgumentError, "Wrong argument 'type'")
-        end
-      ])
-    response_list_to_map(res)
+    res
+    |> String.split("\n", trim: true)
+    |> Enum.reduce(
+      [],
+      fn x, acc ->
+        [_, mac, name, text] = String.split(x, " ")
+        map = %{}
+          |> Map.put(:mac, mac)
+          |> Map.put(:name, name)
+          |> Map.put(:is_default, text == "[default]")
+
+        acc ++ [map]
+      end
+    )
   end
 
   command :devices do
@@ -96,7 +103,8 @@ defmodule Bt.CLI do
     """
 
     run _context do
-      map_of("devices")
+      :devices
+      |> parse_output()
       |> Enum.map(fn {_mac, name} -> name end)
       |> Enum.join("\n")
       |> IO.puts()
@@ -111,8 +119,13 @@ defmodule Bt.CLI do
     """
 
     run _context do
-      map_of("adapters")
-      |> Enum.map(fn {_mac, name} -> name end)
+      :adapters
+      |> parse_output()
+      |> Enum.map(
+        fn %{mac: _mac, name: name, is_default: is_default} ->
+          if is_default, do: "#{name} [default]", else: name
+        end
+      )
       |> Enum.join("\n")
       |> IO.puts()
     end
@@ -127,7 +140,7 @@ defmodule Bt.CLI do
     argument :action
 
     run context do
-      devices = map_of("devices")
+      devices = parse_output(:devices)
       aliases = Config.aliases()
 
       cond do
