@@ -8,6 +8,19 @@ defmodule Bt.CLI do
   Handling bluetooth devices from the shell
   """
 
+  def status_by_rc(0), do: IO.ANSI.green() <> "done" <> IO.ANSI.reset()
+  def status_by_rc(_rc), do: IO.ANSI.red() <> "failed" <> IO.ANSI.reset()
+
+  def write_to_the_previous_line(line, cursor_position, text) do
+    line
+    |> IO.ANSI.cursor_up() # move the cursor up to the line we want to modify
+    |> Kernel.<>(IO.ANSI.cursor_right(cursor_position)) # move the cursor to specific position
+    |> Kernel.<>(text) # write text
+    |> Kernel.<>("\r") # move the cursor to the front of the line
+    |> Kernel.<>(IO.ANSI.cursor_down(line)) # move the cursor back to the bottom
+    |> IO.write()
+  end
+
   command :connect do
     aliases [:con]
     description "Connect device"
@@ -19,12 +32,13 @@ defmodule Bt.CLI do
 
     run context do
       aliases = Config.aliases()
+
+      message = "Trying to connect... "
+      IO.puts(message)
+
       {_res, code} = System.cmd("bluetoothctl", ["connect", aliases[context.alias]])
-      if code == 0 do
-        IO.puts("Device was successfully connected")
-      else
-        IO.puts("Failed to connect")
-      end
+
+      write_to_the_previous_line(1, String.length(message), status_by_rc(code))
     end
   end
 
@@ -39,26 +53,27 @@ defmodule Bt.CLI do
 
     run context do
       aliases = Config.aliases()
+
+      message = "Trying to disconnect... "
+      IO.puts(message)
+
       {_res, code} = System.cmd("bluetoothctl", ["disconnect", aliases[context.alias]])
-      if code == 0 do
-        IO.puts("Device was successfully disconnected")
-      else
-        IO.puts("Failed to disconnect")
-      end
+
+      write_to_the_previous_line(1, String.length(message), status_by_rc(code))
     end
   end
 
   def response_list_to_map(list) do
     list
-      |> String.trim()
-      |> String.split("\n")
-      |> Enum.reduce(
-        %{},
-        fn x, acc ->
-          [_, mac, name] = String.split(x, " ", parts: 3)
-          Map.put(acc, mac, name)
-        end
-      )
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.reduce(
+      %{},
+      fn x, acc ->
+        [_, mac, name] = String.split(x, " ", parts: 3)
+        Map.put(acc, mac, name)
+      end
+    )
   end
 
   def map_of(type) do
