@@ -1,6 +1,7 @@
 defmodule Bt.CLI do
   use ExCLI.DSL, escript: true
   alias Bt.CLI.Config
+  alias Bt.Bluetoothctl
 
   name "bt"
   description "Bluetooth CLI"
@@ -31,12 +32,14 @@ defmodule Bt.CLI do
     argument :alias
 
     run context do
+      seleced_adapter_mac = Config.adapter()
       aliases = Config.aliases()
 
       message = "Trying to connect... "
       IO.puts(message)
 
-      {_res, code} = System.cmd("bluetoothctl", ["connect", aliases[context.alias]])
+      Bluetoothctl.start_link(selected_adapter_mac)
+      code = Bluetoothctl.connect(aliases[context.alias])
 
       write_to_the_previous_line(1, String.length(message), status_by_rc(code))
     end
@@ -52,12 +55,14 @@ defmodule Bt.CLI do
     argument :alias
 
     run context do
+      seleced_adapter_mac = Config.adapter()
       aliases = Config.aliases()
 
       message = "Trying to disconnect... "
       IO.puts(message)
 
-      {_res, code} = System.cmd("bluetoothctl", ["disconnect", aliases[context.alias]])
+      Bluetoothctl.start_link(selected_adapter_mac)
+      code = Bluetoothctl.disconnect(aliases[context.alias])
 
       write_to_the_previous_line(1, String.length(message), status_by_rc(code))
     end
@@ -79,6 +84,8 @@ defmodule Bt.CLI do
   def parse_output(:adapters) do
     {res, _code} = System.cmd("bluetoothctl", ["list"])
 
+    selected_mac = Config.adapter()
+
     res
     |> String.split("\n", trim: true)
     |> Enum.reduce(
@@ -89,6 +96,7 @@ defmodule Bt.CLI do
           |> Map.put(:mac, mac)
           |> Map.put(:name, name)
           |> Map.put(:is_default, text == "[default]")
+          |> Map.put(:is_selected, mac == selected_mac)
 
         acc ++ [map]
       end
@@ -111,23 +119,47 @@ defmodule Bt.CLI do
     end
   end
 
-  command :adapters do
+  command :adapter do
     aliases [:controllers]
     description "List adapters"
     long_description """
     List bluetooth adapters
     """
 
-    run _context do
-      :adapters
-      |> parse_output()
-      |> Enum.map(
-        fn %{mac: _mac, name: name, is_default: is_default} ->
-          if is_default, do: "#{name} [default]", else: name
-        end
-      )
-      |> Enum.join("\n")
-      |> IO.puts()
+    argument :action
+    argument :name, default: ""
+
+    run context do
+      adapters = parse_output(:adapters)
+
+      cond do
+        context.action == "ls" or context.action == "list" ->
+          adapters
+          |> Enum.map(
+            fn %{
+              mac: _mac,
+              name: name,
+              is_default: is_default,
+              is_selected: is_selected
+            } ->
+              cond do
+                is_default and is_selected -> "#{name} [default] <-"
+                is_default -> "#{name} [default]"
+                is_selected -> "#{name} <-"
+                true -> name
+              end
+            end
+          )
+          |> Enum.join("\n")
+          |> IO.puts()
+
+        context.action == "select" ->
+          mac = adapters
+            |> Enum.find(&(&1.name == context.name))
+            |> Map.get(:mac)
+
+          Config.write_adapter(mac)
+      end
     end
   end
 
@@ -144,8 +176,7 @@ defmodule Bt.CLI do
       aliases = Config.aliases()
 
       cond do
-        context.action == "ls" ->
-
+        context.action == "ls" or context.action == "list" ->
           aliases
           |> Enum.map(
             fn {name, mac} ->

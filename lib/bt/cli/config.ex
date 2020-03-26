@@ -6,11 +6,23 @@ defmodule Bt.CLI.Config do
     content
   end
 
+  def adapter do
+    Map.get(read(), "adapter", "")
+  end
+
   def aliases do
     Map.get(read(), "aliases", %{})
   end
 
+  def write_adapter(adapter) do
+    write_config(adapter, aliases())
+  end
+
   def write_aliases(aliases) do
+    write_config(adapter(), aliases)
+  end
+
+  def write_config(adapter_mac, aliases) do
     list =
       aliases
       |> Enum.map(
@@ -21,6 +33,8 @@ defmodule Bt.CLI.Config do
     File.write(
       @file_path,
       """
+      adapter = \"#{adapter_mac}\"
+
       [aliases]
       #{list}
       """
