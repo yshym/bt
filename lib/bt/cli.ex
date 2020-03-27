@@ -121,9 +121,9 @@ defmodule Bt.CLI do
 
   command :adapter do
     aliases [:controllers]
-    description "List adapters"
+    description "Manage adapters"
     long_description """
-    List bluetooth adapters
+    Manage bluetooth adapters
     """
 
     argument :action
@@ -164,9 +164,9 @@ defmodule Bt.CLI do
   end
 
   command :alias do
-    description "List aliases"
+    description "Manage aliases"
     long_description """
-    List aliases of devices
+    Manage aliases of devices
     """
 
     argument :action
