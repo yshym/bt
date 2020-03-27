@@ -32,7 +32,7 @@ defmodule Bt.CLI do
     argument :alias
 
     run context do
-      seleced_adapter_mac = Config.adapter()
+      selected_adapter_mac = Config.adapter()
       aliases = Config.aliases()
 
       message = "Trying to connect... "
@@ -55,7 +55,7 @@ defmodule Bt.CLI do
     argument :alias
 
     run context do
-      seleced_adapter_mac = Config.adapter()
+      selected_adapter_mac = Config.adapter()
       aliases = Config.aliases()
 
       message = "Trying to disconnect... "
