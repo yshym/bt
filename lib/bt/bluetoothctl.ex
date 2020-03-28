@@ -1,13 +1,13 @@
 defmodule Bt.Bluetoothctl do
   use GenServer
 
-  def start_link(adapter) do
+  def start_link(adapter \\ nil) do
     GenServer.start_link(__MODULE__, adapter, name: __MODULE__)
   end
 
   def init(adapter) do
     port = Port.open({:spawn, "bluetoothctl"}, [:binary])
-    Port.command(port, "select #{adapter}\n")
+    unless is_nil(adapter), do: Port.command(port, "select #{adapter}\n")
 
     state = %{
       adapter: adapter,
@@ -24,6 +24,22 @@ defmodule Bt.Bluetoothctl do
 
   def disconnect(device) do
     GenServer.call(__MODULE__, {:disconnect, device})
+  end
+
+  def on do
+    GenServer.cast(__MODULE__, :on)
+  end
+
+  def off do
+    GenServer.cast(__MODULE__, :off)
+  end
+
+  def is_powered do
+    GenServer.call(__MODULE__, :is_powered)
+  end
+
+  def select(adapter) do
+    GenServer.cast(__MODULE__, {:select, adapter})
   end
 
   def handle_call(
@@ -48,24 +64,51 @@ defmodule Bt.Bluetoothctl do
 
     {:noreply, state}
   end
+  def handle_call(
+    :is_powered,
+    from,
+    %{port: port} = state
+  ) do
+    Port.command(port, "show\n")
 
-  def handle_info({port, {:data, data}}, %{from: from} = state) do
+    state = state |> Map.put(:from, from)
+
+    {:noreply, state}
+  end
+
+  def handle_cast(:on, %{port: port} = state) do
+    Port.command(port, "power on\n")
+
+    {:noreply, state}
+  end
+  def handle_cast(:off, %{port: port} = state) do
+    Port.command(port, "power off\n")
+
+    {:noreply, state}
+  end
+  def handle_cast({:select, adapter}, %{port: port} = state) do
+    Port.command(port, "select #{adapter}\n")
+
+    {:noreply, state}
+  end
+
+  def handle_info({_port, {:data, data}}, %{from: from} = state) do
     data
-    |> String.split(~r"\n|(\r\e\[K)", trim: true)
+    |> String.split(~r"\t|\n|(\r\e\[K)", trim: true)
     |> Enum.each(
       fn line ->
         case line do
           "Failed to connect: " <> _error ->
             GenServer.reply(from, 1)
-            Port.close(port)
 
           "Successful disconnected" ->
             GenServer.reply(from, 0)
-            Port.close(port)
 
           "Connection successful" ->
             GenServer.reply(from, 0)
-            Port.close(port)
+
+          "Powered: " <> state ->
+            GenServer.reply(from, state == "yes")
 
           _ -> nil
         end

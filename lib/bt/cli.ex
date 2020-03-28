@@ -84,19 +84,23 @@ defmodule Bt.CLI do
   def parse_output(:adapters) do
     {res, _code} = System.cmd("bluetoothctl", ["list"])
 
-    selected_mac = Config.adapter()
-
     res
     |> String.split("\n", trim: true)
     |> Enum.reduce(
       [],
       fn x, acc ->
-        [_, mac, name, text] = String.split(x, " ")
+        [_, mac, name, _text] = String.split(x, " ")
+
+        selected_mac = Config.adapter()
+
+        Bluetoothctl.start_link()
+        Bluetoothctl.select(mac)
+
         map = %{}
           |> Map.put(:mac, mac)
           |> Map.put(:name, name)
-          |> Map.put(:is_default, text == "[default]")
           |> Map.put(:is_selected, mac == selected_mac)
+          |> Map.put(:is_powered, Bluetoothctl.is_powered())
 
         acc ++ [map]
       end
@@ -139,15 +143,15 @@ defmodule Bt.CLI do
             fn %{
               mac: _mac,
               name: name,
-              is_default: is_default,
-              is_selected: is_selected
+              is_selected: is_selected,
+              is_powered: is_powered
             } ->
-              cond do
-                is_default and is_selected -> "#{name} [default] <-"
-                is_default -> "#{name} [default]"
-                is_selected -> "#{name} <-"
-                true -> name
-              end
+              on = "#{IO.ANSI.green()}#{IO.ANSI.reset()}"
+              off = "#{IO.ANSI.white()}#{IO.ANSI.reset()}"
+
+              name
+              |> Kernel.<>(if is_powered, do: " #{on}", else: " #{off}")
+              |> Kernel.<>(if is_selected, do: " <-", else: "")
             end
           )
           |> Enum.join("\n")
@@ -159,6 +163,12 @@ defmodule Bt.CLI do
             |> Map.get(:mac)
 
           Config.write_adapter(mac)
+
+        context.action == "on" or context.action == "off" ->
+          selected_mac = Config.adapter()
+
+          Bluetoothctl.start_link(selected_mac)
+          apply(Bluetoothctl, String.to_atom(context.action), [])
       end
     end
   end
