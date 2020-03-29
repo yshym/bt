@@ -146,8 +146,8 @@ defmodule Bt.CLI do
               is_selected: is_selected,
               is_powered: is_powered
             } ->
-              on = "#{IO.ANSI.green()}#{IO.ANSI.reset()}"
-              off = "#{IO.ANSI.white()}#{IO.ANSI.reset()}"
+              on = IO.ANSI.green() <> "" <> IO.ANSI.reset()
+              off = IO.ANSI.white() <> "" <> IO.ANSI.reset()
 
               name
               |> Kernel.<>(if is_powered, do: " #{on}", else: " #{off}")
