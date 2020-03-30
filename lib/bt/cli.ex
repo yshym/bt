@@ -1,7 +1,6 @@
 defmodule Bt.CLI do
   use ExCLI.DSL, escript: true
-  alias Bt.CLI.Config
-  alias Bt.Bluetoothctl
+  alias Bt.{CLI.Config, Bluetoothctl, Parser}
 
   name "bt"
   description "Bluetooth CLI"
@@ -68,45 +67,6 @@ defmodule Bt.CLI do
     end
   end
 
-  def parse_output(:devices) do
-    {res, _code} = System.cmd("bluetoothctl", ["devices"])
-
-    res
-    |> String.split("\n", trim: true)
-    |> Enum.reduce(
-      %{},
-      fn x, acc ->
-        [_, mac, name] = String.split(x, " ", parts: 3)
-        Map.put(acc, mac, name)
-      end
-    )
-  end
-  def parse_output(:adapters) do
-    {res, _code} = System.cmd("bluetoothctl", ["list"])
-
-    res
-    |> String.split("\n", trim: true)
-    |> Enum.reduce(
-      [],
-      fn x, acc ->
-        [_, mac, name, _text] = String.split(x, " ")
-
-        selected_mac = Config.adapter()
-
-        Bluetoothctl.start_link()
-        Bluetoothctl.select(mac)
-
-        map = %{}
-          |> Map.put(:mac, mac)
-          |> Map.put(:name, name)
-          |> Map.put(:is_selected, mac == selected_mac)
-          |> Map.put(:is_powered, Bluetoothctl.is_powered())
-
-        acc ++ [map]
-      end
-    )
-  end
-
   command :devices do
     aliases [:devs]
     description "List devices"
@@ -116,7 +76,7 @@ defmodule Bt.CLI do
 
     run _context do
       :devices
-      |> parse_output()
+      |> Parser.parse_output()
       |> Enum.map(fn {_mac, name} -> name end)
       |> Enum.join("\n")
       |> IO.puts()
@@ -134,10 +94,11 @@ defmodule Bt.CLI do
     argument :name, default: ""
 
     run context do
-      adapters = parse_output(:adapters)
 
       cond do
         context.action == "ls" or context.action == "list" ->
+          adapters = Parser.parse_output(:adapters)
+
           adapters
           |> Enum.map(
             fn %{
@@ -158,6 +119,8 @@ defmodule Bt.CLI do
           |> IO.puts()
 
         context.action == "select" ->
+          adapters = Parser.parse_output(:adapters)
+
           mac = adapters
             |> Enum.find(&(&1.name == context.name))
             |> Map.get(:mac)
@@ -182,7 +145,7 @@ defmodule Bt.CLI do
     argument :action
 
     run context do
-      devices = parse_output(:devices)
+      devices = Parser.parse_output(:devices)
       aliases = Config.aliases()
 
       cond do
