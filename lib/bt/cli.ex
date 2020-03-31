@@ -145,6 +145,8 @@ defmodule Bt.CLI do
 
           Bluetoothctl.start_link(selected_mac)
           apply(Bluetoothctl, String.to_atom(context.action), [])
+
+        true -> IO.puts("Action '#{context.action}' does not exist")
       end
     end
   end
@@ -209,6 +211,8 @@ defmodule Bt.CLI do
           )
           |> Enum.into(%{})
           |> Config.write_aliases()
+
+        true -> IO.puts("Action '#{context.action}' does not exist")
       end
     end
   end
