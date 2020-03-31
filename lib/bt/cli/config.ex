@@ -23,21 +23,27 @@ defmodule Bt.CLI.Config do
   end
 
   def write_config(adapter_mac, aliases) do
-    list =
+    adapter_config = "adapter = \"#{adapter_mac}\""
+
+    aliases_list =
       aliases
       |> Enum.map(
         fn {name, mac} -> "#{name} = \"#{mac}\"" end
       )
       |> Enum.join("\n")
 
-    File.write(
-      @file_path,
-      """
-      adapter = \"#{adapter_mac}\"
+    aliases_config =
+      if String.trim(aliases_list) == "" do
+        ""
+      else
+        """
+        [aliases]
+        #{aliases_list}
+        """
+      end
 
-      [aliases]
-      #{list}
-      """
-    )
+    config = "#{adapter_config}\n\n#{aliases_config}"
+
+    File.write(@file_path, config)
   end
 end
