@@ -8,7 +8,10 @@ defmodule Bt.MixProject do
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       escript: [main_module: Bt.CLI],
-      deps: deps()
+      deps: deps(),
+      name: "Bt",
+      description: description(),
+      package: package()
     ]
   end
 
@@ -22,6 +25,18 @@ defmodule Bt.MixProject do
     [
       {:ex_cli, "~> 0.1.6"},
       {:toml, "~> 0.6.1"},
+    ]
+  end
+
+  defp description do
+    "Convenient wrapper around bluetoothctl"
+  end
+
+  defp package do
+    [
+      name: "bt",
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/fly1ngDream/bt"}
     ]
   end
 end
