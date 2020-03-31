@@ -34,13 +34,17 @@ defmodule Bt.CLI do
       selected_adapter_mac = Config.adapter()
       aliases = Config.aliases()
 
-      message = "Trying to connect... "
-      IO.puts(message)
+      if context.alias in aliases do
+        message = "Trying to connect... "
+        IO.puts(message)
 
-      Bluetoothctl.start_link(selected_adapter_mac)
-      code = Bluetoothctl.connect(aliases[context.alias])
+        Bluetoothctl.start_link(selected_adapter_mac)
+        code = Bluetoothctl.connect(aliases[context.alias])
 
-      write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+        write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+      else
+        IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
+      end
     end
   end
 
@@ -57,13 +61,18 @@ defmodule Bt.CLI do
       selected_adapter_mac = Config.adapter()
       aliases = Config.aliases()
 
-      message = "Trying to disconnect... "
-      IO.puts(message)
 
-      Bluetoothctl.start_link(selected_adapter_mac)
-      code = Bluetoothctl.disconnect(aliases[context.alias])
+      if context.alias in aliases do
+        message = "Trying to disconnect... "
+        IO.puts(message)
 
-      write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+        Bluetoothctl.start_link(selected_adapter_mac)
+        code = Bluetoothctl.disconnect(aliases[context.alias])
+
+        write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+      else
+        IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
+      end
     end
   end
 
