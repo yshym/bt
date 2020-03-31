@@ -34,7 +34,7 @@ defmodule Bt.CLI do
       selected_adapter_mac = Config.adapter()
       aliases = Config.aliases()
 
-      if context.alias in aliases do
+      if context.alias in Map.keys(aliases) do
         message = "Trying to connect... "
         IO.puts(message)
 
@@ -62,7 +62,7 @@ defmodule Bt.CLI do
       aliases = Config.aliases()
 
 
-      if context.alias in aliases do
+      if context.alias in Map.keys(aliases) do
         message = "Trying to disconnect... "
         IO.puts(message)
 
