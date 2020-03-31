@@ -130,11 +130,15 @@ defmodule Bt.CLI do
         context.action == "select" ->
           adapters = Parser.parse_output(:adapters)
 
-          mac = adapters
-            |> Enum.find(&(&1.name == context.name))
-            |> Map.get(:mac)
+          adapter = Enum.find(adapters, &(&1.name == context.name))
 
-          Config.write_adapter(mac)
+          if is_nil(adapter) do
+            IO.puts("Adapter '#{context.name}' does not exist. Use 'bt adapter ls' to list adapters")
+          else
+            mac = Map.get(adapter, :mac)
+
+            Config.write_adapter(mac)
+          end
 
         context.action == "on" or context.action == "off" ->
           selected_mac = Config.adapter()
