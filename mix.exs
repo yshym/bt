@@ -11,7 +11,7 @@ defmodule Bt.MixProject do
       deps: deps(),
       name: "Bt",
       description: description(),
-      package: package()
+      package: package(),
     ]
   end
 
@@ -25,6 +25,7 @@ defmodule Bt.MixProject do
     [
       {:ex_cli, "~> 0.1.6"},
       {:toml, "~> 0.6.1"},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
     ]
   end
 
