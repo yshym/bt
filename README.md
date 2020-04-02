@@ -1,6 +1,6 @@
 # Bt
 
-[![Hex version](https://img.shields.io/hexpm/v/bt)](https://img.shields.io/hexpm/v/bt)
+[![Hex version](https://img.shields.io/hexpm/v/bt)](https://hex.pm/packages/bt)
 
 ## Installation
 
