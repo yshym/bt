@@ -33,7 +33,7 @@ defmodule Bt.Parser do
           |> Map.put(:mac, mac)
           |> Map.put(:name, name)
           |> Map.put(:is_selected, mac == selected_mac)
-          |> Map.put(:is_powered, Bluetoothctl.is_powered())
+          |> Map.put(:is_powered, Bluetoothctl.powered?())
 
         acc ++ [map]
       end

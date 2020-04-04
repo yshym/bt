@@ -39,9 +39,13 @@ defmodule Bt.CLI do
         IO.puts(message)
 
         Bluetoothctl.start_link(selected_adapter_mac)
-        code = Bluetoothctl.connect(aliases[context.alias])
+        if Bluetoothctl.connected?() do
+          IO.puts("Adapter is already connected to other device")
+        else
+          code = Bluetoothctl.connect(aliases[context.alias])
 
-        write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+          write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+        end
       else
         IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
       end

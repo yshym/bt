@@ -34,8 +34,15 @@ defmodule Bt.Bluetoothctl do
     GenServer.cast(__MODULE__, :off)
   end
 
-  def is_powered do
-    GenServer.call(__MODULE__, :is_powered)
+  def powered? do
+    GenServer.call(__MODULE__, :powered?)
+  end
+
+  def connected?(device) do
+    GenServer.call(__MODULE__, {:connected?, device})
+  end
+  def connected? do
+    GenServer.call(__MODULE__, :connected?)
   end
 
   def select(adapter) do
@@ -49,7 +56,7 @@ defmodule Bt.Bluetoothctl do
   ) do
     Port.command(port, "connect #{device}\n")
 
-    state = state |> Map.put(:from, from)
+    state = Map.put(state, :from, from)
 
     {:noreply, state}
   end
@@ -60,18 +67,40 @@ defmodule Bt.Bluetoothctl do
   ) do
     Port.command(port, "disconnect #{device}\n")
 
-    state = state |> Map.put(:from, from)
+    state = Map.put(state, :from, from)
 
     {:noreply, state}
   end
   def handle_call(
-    :is_powered,
+    :powered?,
     from,
     %{port: port} = state
   ) do
     Port.command(port, "show\n")
 
-    state = state |> Map.put(:from, from)
+    state = Map.put(state, :from, from)
+
+    {:noreply, state}
+  end
+  def handle_call(
+    {:connected?, device},
+    from,
+    %{port: port} = state
+  ) do
+    Port.command(port, "info #{device}\n")
+
+    state = Map.put(state, :from, from)
+
+    {:noreply, state}
+  end
+  def handle_call(
+    :connected?,
+    from,
+    %{port: port} = state
+  ) do
+    Port.command(port, "info\n")
+
+    state = Map.put(state, :from, from)
 
     {:noreply, state}
   end
@@ -108,6 +137,12 @@ defmodule Bt.Bluetoothctl do
             GenServer.reply(from, 0)
 
           "Powered: " <> state ->
+            GenServer.reply(from, state == "yes")
+
+          "Missing device address argument" ->
+            GenServer.reply(from, false)
+
+          "Connected: " <> state ->
             GenServer.reply(from, state == "yes")
 
           _ -> nil
