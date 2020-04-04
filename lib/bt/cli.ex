@@ -103,7 +103,6 @@ defmodule Bt.CLI do
     argument :name, default: ""
 
     run context do
-
       cond do
         context.action == "ls" or context.action == "list" ->
           adapters = Parser.parse_output(:adapters)
@@ -116,8 +115,8 @@ defmodule Bt.CLI do
               is_selected: is_selected,
               is_powered: is_powered
             } ->
-              on = IO.ANSI.green() <> "" <> IO.ANSI.reset()
-              off = IO.ANSI.white() <> "" <> IO.ANSI.reset()
+              on = IO.ANSI.green() <> "●" <> IO.ANSI.reset()
+              off = IO.ANSI.white() <> "●" <> IO.ANSI.reset()
 
               name
               |> Kernel.<>(if is_powered, do: " #{on}", else: " #{off}")
