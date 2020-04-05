@@ -1,8 +1,8 @@
 defmodule Bt.Parser do
   alias Bt.{CLI.Config, Bluetoothctl}
 
-  @spec parse_output(:devices | :adapters) :: map
-  def parse_output(:devices) do
+  @spec parse_devices :: map
+  def parse_devices do
     {res, _code} = System.cmd("bluetoothctl", ["devices"])
 
     res
@@ -15,7 +15,9 @@ defmodule Bt.Parser do
       end
     )
   end
-  def parse_output(:adapters) do
+
+  @spec parse_adapters :: map
+  def parse_adapters do
     {res, _code} = System.cmd("bluetoothctl", ["list"])
 
     res

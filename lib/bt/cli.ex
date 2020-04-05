@@ -90,8 +90,7 @@ defmodule Bt.CLI do
     """
 
     run _context do
-      :devices
-      |> Parser.parse_output()
+      Parser.parse_devices()
       |> Enum.map(fn {_mac, name} -> name end)
       |> Enum.join("\n")
       |> IO.puts()
@@ -111,7 +110,7 @@ defmodule Bt.CLI do
     run context do
       cond do
         context.action == "ls" or context.action == "list" ->
-          adapters = Parser.parse_output(:adapters)
+          adapters = Parser.parse_adapters()
 
           adapters
           |> Enum.map(
@@ -133,7 +132,7 @@ defmodule Bt.CLI do
           |> IO.puts()
 
         context.action == "select" ->
-          adapters = Parser.parse_output(:adapters)
+          adapters = Parser.parse_adapters()
 
           adapter = Enum.find(adapters, &(&1.name == context.name))
 
@@ -165,7 +164,7 @@ defmodule Bt.CLI do
     argument :action
 
     run context do
-      devices = Parser.parse_output(:devices)
+      devices = Parser.parse_devices()
       aliases = Config.aliases()
 
       cond do
