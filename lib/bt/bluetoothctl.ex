@@ -1,10 +1,12 @@
 defmodule Bt.Bluetoothctl do
   use GenServer
 
+  @spec start_link(String.t() | nil) :: term
   def start_link(adapter \\ nil) do
     GenServer.start_link(__MODULE__, adapter, name: __MODULE__)
   end
 
+  @spec init(String.t() | nil) :: {:ok, map}
   def init(adapter) do
     port = Port.open({:spawn, "bluetoothctl"}, [:binary])
     unless is_nil(adapter), do: Port.command(port, "select #{adapter}\n")
@@ -18,10 +20,12 @@ defmodule Bt.Bluetoothctl do
     {:ok, state}
   end
 
+  @spec connect(String.t()) :: term
   def connect(device) do
     GenServer.call(__MODULE__, {:connect, device})
   end
 
+  @spec disconnect(String.t()) :: term
   def disconnect(device) do
     GenServer.call(__MODULE__, {:disconnect, device})
   end
@@ -34,13 +38,17 @@ defmodule Bt.Bluetoothctl do
     GenServer.cast(__MODULE__, :off)
   end
 
+  @spec powered? :: bool
   def powered? do
     GenServer.call(__MODULE__, :powered?)
   end
 
+  @spec connected?(String.t()) :: bool
   def connected?(device) do
     GenServer.call(__MODULE__, {:connected?, device})
   end
+
+  @spec connected? :: bool
   def connected? do
     GenServer.call(__MODULE__, :connected?)
   end
