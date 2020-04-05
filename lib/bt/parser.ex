@@ -14,6 +14,7 @@ defmodule Bt.Parser do
         Map.put(acc, mac, name)
       end
     )
+    |> Enum.sort()
   end
 
   @spec parse_adapters :: map
@@ -41,5 +42,6 @@ defmodule Bt.Parser do
         acc ++ [map]
       end
     )
+    |> Enum.sort()
   end
 end
