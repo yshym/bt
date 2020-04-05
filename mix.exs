@@ -25,7 +25,8 @@ defmodule Bt.MixProject do
     [
       {:ex_cli, "~> 0.1.6"},
       {:toml, "~> 0.6.1"},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev},
+      {:dialyxir, "~> 0.4", only: :dev},
     ]
   end
 

@@ -8,9 +8,11 @@ defmodule Bt.CLI do
   Handling bluetooth devices from the shell
   """
 
+  @spec status_by_rc(0..255) :: String.t()
   def status_by_rc(0), do: IO.ANSI.green() <> "done" <> IO.ANSI.reset()
   def status_by_rc(_rc), do: IO.ANSI.red() <> "failed" <> IO.ANSI.reset()
 
+  @spec write_to_the_previous_line(integer, integer, String.t()) :: :ok
   def write_to_the_previous_line(line, cursor_position, text) do
     line
     |> IO.ANSI.cursor_up() # move the cursor up to the line we want to modify
