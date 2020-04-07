@@ -18,7 +18,7 @@ defmodule Bt.Parser do
     |> Enum.into(%{})
   end
 
-  @spec parse_adapters :: map
+  @spec parse_adapters :: list
   def parse_adapters do
     {res, _code} = System.cmd("bluetoothctl", ["list"])
 

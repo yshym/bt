@@ -1,10 +1,14 @@
 defmodule Bt.CLI.Config do
+  import Bt.Map
+
   @file_path Path.expand("~/.btrc.toml")
 
   @spec read :: map
   def read do
-    {:ok, content} = Toml.decode_file(@file_path)
-    content
+    case Toml.decode_file(@file_path) do
+      {:ok, content} -> content
+      {:error, _reason} -> %{}
+    end
   end
 
   @spec adapter :: String.t()
@@ -15,6 +19,16 @@ defmodule Bt.CLI.Config do
   @spec aliases :: map
   def aliases do
     Map.get(read(), "aliases", %{})
+  end
+
+  @spec add_alias(String.t(), String.t()) :: :ok | {:error, File.posix()}
+  def add_alias(device_mac, name) do
+    aliases()
+    |> swap()
+    |> Map.put(device_mac, name)
+    |> Enum.into(%{})
+    |> swap()
+    |> write_aliases()
   end
 
   @spec write_adapter(String.t()) :: :ok | {:error, File.posix()}

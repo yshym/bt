@@ -36,21 +36,25 @@ defmodule Bt.CLI do
       selected_adapter_mac = Config.adapter()
       aliases = Config.aliases()
 
-      if context.alias in Map.keys(aliases) do
-        message = "Trying to connect... "
-        IO.puts(message)
-
-        Bluetoothctl.start_link(selected_adapter_mac)
-        code =
-          if Bluetoothctl.connected?() do
-            1
-          else
-            Bluetoothctl.connect(aliases[context.alias])
-          end
-
-        write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+      if selected_adapter_mac == "" do
+        IO.puts("Adapter is not selected. 'bt adapter select <adapter>' to choose one")
       else
-        IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
+        if context.alias in Map.keys(aliases) do
+          message = "Trying to connect... "
+          IO.puts(message)
+
+          Bluetoothctl.start_link(selected_adapter_mac)
+          code =
+            if Bluetoothctl.connected?() do
+              1
+            else
+              Bluetoothctl.connect(aliases[context.alias])
+            end
+
+          write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+        else
+          IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
+        end
       end
     end
   end
@@ -69,16 +73,20 @@ defmodule Bt.CLI do
       aliases = Config.aliases()
 
 
-      if context.alias in Map.keys(aliases) do
-        message = "Trying to disconnect... "
-        IO.puts(message)
-
-        Bluetoothctl.start_link(selected_adapter_mac)
-        code = Bluetoothctl.disconnect(aliases[context.alias])
-
-        write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+      if selected_adapter_mac == "" do
+        IO.puts("Adapter is not selected. 'bt adapter select <adapter>' to choose one")
       else
-        IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
+        if context.alias in Map.keys(aliases) do
+          message = "Trying to disconnect... "
+          IO.puts(message)
+
+          Bluetoothctl.start_link(selected_adapter_mac)
+          code = Bluetoothctl.disconnect(aliases[context.alias])
+
+          write_to_the_previous_line(1, String.length(message), status_by_rc(code))
+        else
+          IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
+        end
       end
     end
   end
@@ -204,18 +212,7 @@ defmodule Bt.CLI do
             |> String.trim()
 
           # Add alias
-          aliases
-          |> Enum.map(
-            fn {name, mac} ->
-              if mac == device_mac do
-                {alias_name, mac}
-              else
-                {name, mac}
-              end
-            end
-          )
-          |> Enum.into(%{})
-          |> Config.write_aliases()
+          Config.add_alias(device_mac, alias_name)
 
         true -> IO.puts("Action '#{context.action}' does not exist")
       end
