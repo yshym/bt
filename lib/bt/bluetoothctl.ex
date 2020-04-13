@@ -22,12 +22,12 @@ defmodule Bt.Bluetoothctl do
 
   @spec connect(String.t()) :: term
   def connect(device) do
-    GenServer.call(__MODULE__, {:connect, device})
+    GenServer.call(__MODULE__, {:connect, device}, 10000)
   end
 
   @spec disconnect(String.t()) :: term
   def disconnect(device) do
-    GenServer.call(__MODULE__, {:disconnect, device})
+    GenServer.call(__MODULE__, {:disconnect, device}, 10000)
   end
 
   def on do
@@ -134,6 +134,8 @@ defmodule Bt.Bluetoothctl do
     |> String.split(~r"\t|\n|(\r\e\[K)", trim: true)
     |> Enum.each(
       fn line ->
+        IO.puts(line)
+
         case line do
           "Failed to connect: " <> _error ->
             GenServer.reply(from, 1)
