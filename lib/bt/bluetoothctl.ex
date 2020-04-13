@@ -134,8 +134,6 @@ defmodule Bt.Bluetoothctl do
     |> String.split(~r"\t|\n|(\r\e\[K)", trim: true)
     |> Enum.each(
       fn line ->
-        IO.puts(line)
-
         case line do
           "Failed to connect: " <> _error ->
             GenServer.reply(from, 1)
