@@ -24,3 +24,6 @@ bt-*.tar
 
 # Formatter config
 .formatter.exs
+
+# lsp
+.elixir_ls/
