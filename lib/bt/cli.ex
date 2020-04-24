@@ -51,9 +51,10 @@ defmodule Bt.CLI do
             else
               Bluetoothctl.connect(aliases[context.alias])
             end
+          status = status_by_rc(code)
+          issue = if is_connected, do: "Already connected"
 
-          write_to_the_previous_line(1, String.length(message), status_by_rc(code))
-          if is_connected, do: IO.puts("This device is already connected")
+          write_to_the_previous_line(1, String.length(message), (if issue, do: "#{status} (#{issue})", else: status))
         else
           IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
         end
@@ -157,8 +158,7 @@ defmodule Bt.CLI do
 
         context.action == "on" or context.action == "off" ->
           selected_mac = Config.adapter()
-
-          Bluetoothctl.start_link(selected_mac)
+Bluetoothctl.start_link(selected_mac)
           apply(Bluetoothctl, String.to_atom(context.action), [])
 
         true -> IO.puts("Action '#{context.action}' does not exist")
