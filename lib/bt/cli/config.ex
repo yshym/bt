@@ -1,4 +1,8 @@
 defmodule Bt.CLI.Config do
+  @moduledoc """
+  Configuration for command line interface
+  """
+
   import Bt.Map
 
   @file_path Path.expand("~/.btrc.toml")

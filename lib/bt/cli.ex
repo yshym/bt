@@ -1,4 +1,8 @@
 defmodule Bt.CLI do
+  @moduledoc """
+  Bluetooth CLI
+  """
+
   use ExCLI.DSL, escript: true
   alias Bt.{CLI.Config, Bluetoothctl, Parser}
 

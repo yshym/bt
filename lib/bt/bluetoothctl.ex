@@ -1,4 +1,8 @@
 defmodule Bt.Bluetoothctl do
+  @moduledoc """
+  Bluetoothctl GenServer wrapper
+  """
+
   use GenServer
 
   @spec start_link(String.t() | nil) :: term

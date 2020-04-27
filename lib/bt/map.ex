@@ -1,4 +1,8 @@
 defmodule Bt.Map do
+  @moduledoc """
+  Custom map utility functions
+  """
+
   @spec swap(map) :: map
   def swap(map) do
     map

@@ -1,4 +1,8 @@
 defmodule Bt.Parser do
+  @moduledoc """
+  Parser for output of some bluetoothctl commands
+  """
+
   alias Bt.{CLI.Config, Bluetoothctl}
 
   @spec parse_devices :: map
