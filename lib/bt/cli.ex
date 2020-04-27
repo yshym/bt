@@ -4,7 +4,7 @@ defmodule Bt.CLI do
   """
 
   use ExCLI.DSL, escript: true
-  alias Bt.{CLI.Config, Bluetoothctl, Parser}
+  alias Bt.{Bluetoothctl, CLI.Config, Parser}
 
   name "bt"
   description "Bluetooth CLI"
@@ -78,7 +78,6 @@ defmodule Bt.CLI do
     run context do
       selected_adapter_mac = Config.adapter()
       aliases = Config.aliases()
-
 
       if selected_adapter_mac == "" do
         IO.puts("Adapter is not selected. 'bt adapter select <adapter>' to choose one")
