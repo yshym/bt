@@ -22,12 +22,12 @@ defmodule Bt.Bluetoothctl do
 
   @spec connect(String.t()) :: term
   def connect(device) do
-    GenServer.call(__MODULE__, {:connect, device}, 10000)
+    GenServer.call(__MODULE__, {:connect, device}, 10_000)
   end
 
   @spec disconnect(String.t()) :: term
   def disconnect(device) do
-    GenServer.call(__MODULE__, {:disconnect, device}, 10000)
+    GenServer.call(__MODULE__, {:disconnect, device}, 10_000)
   end
 
   def on do
