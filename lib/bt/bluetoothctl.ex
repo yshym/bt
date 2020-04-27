@@ -1,6 +1,6 @@
 defmodule Bt.Bluetoothctl do
   @moduledoc """
-  Bluetoothctl GenServer wrapper
+  GenServer wrapper around bluetoothctl
   """
 
   use GenServer

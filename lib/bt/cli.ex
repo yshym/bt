@@ -1,6 +1,6 @@
 defmodule Bt.CLI do
   @moduledoc """
-  Bluetooth CLI
+  Bluetooth command line interface
   """
 
   use ExCLI.DSL, escript: true
