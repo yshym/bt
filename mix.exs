@@ -1,18 +1,24 @@
 defmodule Bt.MixProject do
   use Mix.Project
 
+  @app :bt
+
   def project do
     [
-      app: :bt,
+      app: @app,
       version: "0.2.1",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
-      escript: [main_module: Bt.CLI],
+      escript: escript(),
       deps: deps(),
       name: "Bt",
       description: description(),
       package: package()
     ]
+  end
+
+  defp escript do
+    [main_module: Bt.CLI, path: "bin/#{@app}"]
   end
 
   def application do

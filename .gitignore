@@ -27,3 +27,6 @@ bt-*.tar
 
 # lsp
 .elixir_ls/
+
+# executables
+bin/
