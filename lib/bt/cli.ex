@@ -97,6 +97,41 @@ defmodule Bt.CLI do
     end
   end
 
+  command :reconnect do
+    aliases [:rcon]
+    description "Reconnect device"
+    long_description """
+    Reconnect bluetooth device
+    """
+
+    argument :alias
+
+    run context do
+      selected_adapter_mac = Config.adapter()
+      aliases = Config.aliases()
+
+      if selected_adapter_mac == "" do
+        IO.puts("Adapter is not selected. 'bt adapter select <adapter>' to choose one")
+      else
+        if context.alias in Map.keys(aliases) do
+          message = "Trying to reconnect... "
+          IO.puts(message)
+
+          mac = aliases[context.alias]
+
+          Bluetoothctl.start_link(selected_adapter_mac)
+
+          d_code = Bluetoothctl.disconnect(mac)
+          c_code = Bluetoothctl.connect(mac)
+
+          write_to_the_previous_line(1, String.length(message), status_by_rc(d_code && c_code))
+        else
+          IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
+        end
+      end
+    end
+  end
+
   command :devices do
     aliases [:devs]
     description "List devices"
