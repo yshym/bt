@@ -62,54 +62,58 @@ defmodule Bt.Bluetoothctl do
   end
 
   def handle_call(
-    {:connect, device},
-    from,
-    %{port: port} = state
-  ) do
+        {:connect, device},
+        from,
+        %{port: port} = state
+      ) do
     Port.command(port, "connect #{device}\n")
 
     state = Map.put(state, :from, from)
 
     {:noreply, state}
   end
+
   def handle_call(
-    {:disconnect, device},
-    from,
-    %{port: port} = state
-  ) do
+        {:disconnect, device},
+        from,
+        %{port: port} = state
+      ) do
     Port.command(port, "disconnect #{device}\n")
 
     state = Map.put(state, :from, from)
 
     {:noreply, state}
   end
+
   def handle_call(
-    :powered?,
-    from,
-    %{port: port} = state
-  ) do
+        :powered?,
+        from,
+        %{port: port} = state
+      ) do
     Port.command(port, "show\n")
 
     state = Map.put(state, :from, from)
 
     {:noreply, state}
   end
+
   def handle_call(
-    {:connected?, device},
-    from,
-    %{port: port} = state
-  ) do
+        {:connected?, device},
+        from,
+        %{port: port} = state
+      ) do
     Port.command(port, "info #{device}\n")
 
     state = Map.put(state, :from, from)
 
     {:noreply, state}
   end
+
   def handle_call(
-    :connected?,
-    from,
-    %{port: port} = state
-  ) do
+        :connected?,
+        from,
+        %{port: port} = state
+      ) do
     Port.command(port, "info\n")
 
     state = Map.put(state, :from, from)
@@ -122,11 +126,13 @@ defmodule Bt.Bluetoothctl do
 
     {:noreply, state}
   end
+
   def handle_cast(:off, %{port: port} = state) do
     Port.command(port, "power off\n")
 
     {:noreply, state}
   end
+
   def handle_cast({:select, adapter}, %{port: port} = state) do
     Port.command(port, "select #{adapter}\n")
 
@@ -136,34 +142,34 @@ defmodule Bt.Bluetoothctl do
   def handle_info({_port, {:data, data}}, %{from: from} = state) do
     data
     |> String.split(~r"\t|\n|(\r\e\[K)", trim: true)
-    |> Enum.each(
-      fn line ->
-        case line do
-          "Failed to connect: " <> _error ->
-            GenServer.reply(from, 1)
+    |> Enum.each(fn line ->
+      case line do
+        "Failed to connect: " <> _error ->
+          GenServer.reply(from, 1)
 
-          "Successful disconnected" ->
-            GenServer.reply(from, 0)
+        "Successful disconnected" ->
+          GenServer.reply(from, 0)
 
-          "Connection successful" ->
-            GenServer.reply(from, 0)
+        "Connection successful" ->
+          GenServer.reply(from, 0)
 
-          "Powered: " <> state ->
-            GenServer.reply(from, state == "yes")
+        "Powered: " <> state ->
+          GenServer.reply(from, state == "yes")
 
-          "Missing device address argument" ->
-            GenServer.reply(from, false)
+        "Missing device address argument" ->
+          GenServer.reply(from, false)
 
-          "Connected: " <> state ->
-            GenServer.reply(from, state == "yes")
+        "Connected: " <> state ->
+          GenServer.reply(from, state == "yes")
 
-          _ -> nil
-        end
+        _ ->
+          nil
       end
-    )
+    end)
 
     {:noreply, state}
   end
+
   def handle_info({_port, _msg}, state) do
     {:noreply, state}
   end

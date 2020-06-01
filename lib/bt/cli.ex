@@ -6,11 +6,12 @@ defmodule Bt.CLI do
   use ExCLI.DSL, escript: true
   alias Bt.{Bluetoothctl, CLI.Config, Parser}
 
-  name "bt"
-  description "Bluetooth CLI"
-  long_description """
+  name("bt")
+  description("Bluetooth CLI")
+
+  long_description("""
   Handling bluetooth devices from the shell
-  """
+  """)
 
   @spec status_by_rc(0..255) :: String.t()
   def status_by_rc(0), do: IO.ANSI.green() <> "done" <> IO.ANSI.reset()
@@ -19,22 +20,28 @@ defmodule Bt.CLI do
   @spec write_to_the_previous_line(integer, integer, String.t()) :: :ok
   def write_to_the_previous_line(line, cursor_position, text) do
     line
-    |> IO.ANSI.cursor_up() # move the cursor up to the line we want to modify
-    |> Kernel.<>(IO.ANSI.cursor_right(cursor_position)) # move the cursor to specific position
-    |> Kernel.<>(text) # write text
-    |> Kernel.<>("\r") # move the cursor to the front of the line
-    |> Kernel.<>(IO.ANSI.cursor_down(line)) # move the cursor back to the bottom
+    # move the cursor up to the line we want to modify
+    |> IO.ANSI.cursor_up()
+    # move the cursor to specific position
+    |> Kernel.<>(IO.ANSI.cursor_right(cursor_position))
+    # write text
+    |> Kernel.<>(text)
+    # move the cursor to the front of the line
+    |> Kernel.<>("\r")
+    # move the cursor back to the bottom
+    |> Kernel.<>(IO.ANSI.cursor_down(line))
     |> IO.write()
   end
 
   command :connect do
-    aliases [:con]
-    description "Connect device"
-    long_description """
-    Connect bluetooth device
-    """
+    aliases([:con])
+    description("Connect device")
 
-    argument :alias
+    long_description("""
+    Connect bluetooth device
+    """)
+
+    argument(:alias)
 
     run context do
       selected_adapter_mac = Config.adapter()
@@ -49,16 +56,22 @@ defmodule Bt.CLI do
 
           Bluetoothctl.start_link(selected_adapter_mac)
           is_connected = Bluetoothctl.connected?()
+
           code =
             if is_connected do
               1
             else
               Bluetoothctl.connect(aliases[context.alias])
             end
+
           status = status_by_rc(code)
           issue = if is_connected, do: "Already connected"
 
-          write_to_the_previous_line(1, String.length(message), (if issue, do: "#{status} (#{issue})", else: status))
+          write_to_the_previous_line(
+            1,
+            String.length(message),
+            if(issue, do: "#{status} (#{issue})", else: status)
+          )
         else
           IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
         end
@@ -67,13 +80,14 @@ defmodule Bt.CLI do
   end
 
   command :disconnect do
-    aliases [:dcon]
-    description "Disconnect device"
-    long_description """
-    Disconnect bluetooth device
-    """
+    aliases([:dcon])
+    description("Disconnect device")
 
-    argument :alias
+    long_description("""
+    Disconnect bluetooth device
+    """)
+
+    argument(:alias)
 
     run context do
       selected_adapter_mac = Config.adapter()
@@ -98,13 +112,14 @@ defmodule Bt.CLI do
   end
 
   command :reconnect do
-    aliases [:rcon]
-    description "Reconnect device"
-    long_description """
-    Reconnect bluetooth device
-    """
+    aliases([:rcon])
+    description("Reconnect device")
 
-    argument :alias
+    long_description("""
+    Reconnect bluetooth device
+    """)
+
+    argument(:alias)
 
     run context do
       selected_adapter_mac = Config.adapter()
@@ -133,11 +148,12 @@ defmodule Bt.CLI do
   end
 
   command :devices do
-    aliases [:devs]
-    description "List devices"
-    long_description """
+    aliases([:devs])
+    description("List devices")
+
+    long_description("""
     List bluetooth devices
-    """
+    """)
 
     run _context do
       Parser.parse_devices()
@@ -148,14 +164,15 @@ defmodule Bt.CLI do
   end
 
   command :adapter do
-    aliases [:controllers]
-    description "Manage adapters"
-    long_description """
-    Manage bluetooth adapters
-    """
+    aliases([:controllers])
+    description("Manage adapters")
 
-    argument :action
-    argument :name, default: ""
+    long_description("""
+    Manage bluetooth adapters
+    """)
+
+    argument(:action)
+    argument(:name, default: "")
 
     run context do
       cond do
@@ -163,21 +180,19 @@ defmodule Bt.CLI do
           adapters = Parser.parse_adapters()
 
           adapters
-          |> Enum.map(
-            fn %{
-              mac: _mac,
-              name: name,
-              is_selected: is_selected,
-              is_powered: is_powered
-            } ->
-              on = IO.ANSI.green() <> "●" <> IO.ANSI.reset()
-              off = IO.ANSI.white() <> "●" <> IO.ANSI.reset()
+          |> Enum.map(fn %{
+                           mac: _mac,
+                           name: name,
+                           is_selected: is_selected,
+                           is_powered: is_powered
+                         } ->
+            on = IO.ANSI.green() <> "●" <> IO.ANSI.reset()
+            off = IO.ANSI.white() <> "●" <> IO.ANSI.reset()
 
-              name
-              |> Kernel.<>(if is_powered, do: " #{on}", else: " #{off}")
-              |> Kernel.<>(if is_selected, do: " <-", else: "")
-            end
-          )
+            name
+            |> Kernel.<>(if is_powered, do: " #{on}", else: " #{off}")
+            |> Kernel.<>(if is_selected, do: " <-", else: "")
+          end)
           |> Enum.join("\n")
           |> IO.puts()
 
@@ -187,7 +202,9 @@ defmodule Bt.CLI do
           adapter = Enum.find(adapters, &(&1.name == context.name))
 
           if is_nil(adapter) do
-            IO.puts("Adapter '#{context.name}' does not exist. Use 'bt adapter ls' to list adapters")
+            IO.puts(
+              "Adapter '#{context.name}' does not exist. Use 'bt adapter ls' to list adapters"
+            )
           else
             mac = Map.get(adapter, :mac)
 
@@ -196,21 +213,23 @@ defmodule Bt.CLI do
 
         context.action == "on" or context.action == "off" ->
           selected_mac = Config.adapter()
-Bluetoothctl.start_link(selected_mac)
+          Bluetoothctl.start_link(selected_mac)
           apply(Bluetoothctl, String.to_atom(context.action), [])
 
-        true -> IO.puts("Action '#{context.action}' does not exist")
+        true ->
+          IO.puts("Action '#{context.action}' does not exist")
       end
     end
   end
 
   command :alias do
-    description "Manage aliases"
-    long_description """
-    Manage aliases of devices
-    """
+    description("Manage aliases")
 
-    argument :action
+    long_description("""
+    Manage aliases of devices
+    """)
+
+    argument(:action)
 
     run context do
       devices = Parser.parse_devices()
@@ -219,11 +238,9 @@ Bluetoothctl.start_link(selected_mac)
       cond do
         context.action == "ls" or context.action == "list" ->
           aliases
-          |> Enum.map(
-            fn {name, mac} ->
-              "#{name} -> #{devices[mac]}"
-            end
-          )
+          |> Enum.map(fn {name, mac} ->
+            "#{name} -> #{devices[mac]}"
+          end)
           |> Enum.join("\n")
           |> IO.puts()
 
@@ -231,7 +248,7 @@ Bluetoothctl.start_link(selected_mac)
           # List devices
           devices
           |> Enum.with_index()
-          |> Enum.map(fn {{_mac, name}, i} -> "#{i+1}. #{name}" end)
+          |> Enum.map(fn {{_mac, name}, i} -> "#{i + 1}. #{name}" end)
           |> Enum.join("\n")
           |> IO.puts()
 
@@ -254,7 +271,8 @@ Bluetoothctl.start_link(selected_mac)
           # Add alias
           Config.add_alias(device_mac, alias_name)
 
-        true -> IO.puts("Action '#{context.action}' does not exist")
+        true ->
+          IO.puts("Action '#{context.action}' does not exist")
       end
     end
   end

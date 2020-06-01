@@ -18,7 +18,7 @@ defmodule Bt.Parser do
         Map.put(acc, mac, name)
       end
     )
-    |> Enum.sort_by(&(elem(&1, 1)))
+    |> Enum.sort_by(&elem(&1, 1))
     |> Enum.into(%{})
   end
 
@@ -38,7 +38,8 @@ defmodule Bt.Parser do
         Bluetoothctl.start_link()
         Bluetoothctl.select(mac)
 
-        map = %{}
+        map =
+          %{}
           |> Map.put(:mac, mac)
           |> Map.put(:name, name)
           |> Map.put(:is_selected, mac == selected_mac)
@@ -47,6 +48,6 @@ defmodule Bt.Parser do
         acc ++ [map]
       end
     )
-    |> Enum.sort_by(&(&1.name))
+    |> Enum.sort_by(& &1.name)
   end
 end

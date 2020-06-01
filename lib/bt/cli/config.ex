@@ -51,9 +51,7 @@ defmodule Bt.CLI.Config do
 
     aliases_list =
       aliases
-      |> Enum.map(
-        fn {name, mac} -> "#{name} = \"#{mac}\"" end
-      )
+      |> Enum.map(fn {name, mac} -> "#{name} = \"#{mac}\"" end)
       |> Enum.join("\n")
 
     aliases_config =
