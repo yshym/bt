@@ -13,7 +13,8 @@ defmodule Bt.MixProject do
       deps: deps(),
       name: "Bt",
       description: description(),
-      package: package()
+      package: package(),
+      aliases: aliases()
     ]
   end
 
@@ -46,6 +47,12 @@ defmodule Bt.MixProject do
       name: "bt",
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/fly1ngDream/bt"}
+    ]
+  end
+
+  defp aliases do
+    [
+      "escript.install": "escript.install #{escript()[:path]}"
     ]
   end
 end
