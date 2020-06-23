@@ -19,7 +19,10 @@ defmodule Bt.MixProject do
   end
 
   defp escript do
-    [main_module: Bt.CLI, path: "bin/#{@app}"]
+    [
+      main_module: Bt.CLI,
+      path: if(Mix.env() == :prod, do: @app, else: "bin/#{@app}")
+    ]
   end
 
   def application do
