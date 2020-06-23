@@ -46,7 +46,7 @@ defmodule Bt.MixProject do
     [
       name: "bt",
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/fly1ngDream/bt"}
+      links: %{"GitHub" => "https://github.com/yevhenshymotiuk/bt"}
     ]
   end
 
