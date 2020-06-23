@@ -4,7 +4,7 @@ defmodule Bt.CLI do
   """
 
   use ExCLI.DSL, escript: true
-  alias Bt.{Bluetoothctl, CLI.Config, Parser}
+  alias Bt.{Bluetoothctl, CLI.Config, Parser, Wrapper}
 
   name("bt")
   description("Bluetooth CLI")
@@ -61,7 +61,7 @@ defmodule Bt.CLI do
             if is_connected do
               1
             else
-              Bluetoothctl.connect(aliases[context.alias])
+              Wrapper.with_exit_code(fn -> Bluetoothctl.connect(aliases[context.alias]) end)
             end
 
           status = status_by_rc(code)
@@ -101,7 +101,7 @@ defmodule Bt.CLI do
           IO.puts(message)
 
           Bluetoothctl.start_link(selected_adapter_mac)
-          code = Bluetoothctl.disconnect(aliases[context.alias])
+          code = Wrapper.with_exit_code(fn -> Bluetoothctl.disconnect(aliases[context.alias]) end)
 
           write_to_the_previous_line(1, String.length(message), status_by_rc(code))
         else
@@ -136,8 +136,8 @@ defmodule Bt.CLI do
 
           Bluetoothctl.start_link(selected_adapter_mac)
 
-          d_code = Bluetoothctl.disconnect(mac)
-          c_code = Bluetoothctl.connect(mac)
+          d_code = Wrapper.with_exit_code(fn -> Bluetoothctl.disconnect(mac) end)
+          c_code = Wrapper.with_exit_code(fn -> Bluetoothctl.connect(mac) end)
 
           write_to_the_previous_line(1, String.length(message), status_by_rc(d_code && c_code))
         else
