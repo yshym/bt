@@ -21,7 +21,7 @@ defmodule Bt.MixProject do
   defp escript do
     [
       main_module: Bt.CLI,
-      path: if(Mix.env() == :prod, do: @app, else: "bin/#{@app}")
+      path: if(Mix.env() == :prod, do: Atom.to_string(@app), else: "bin/#{@app}")
     ]
   end
 
