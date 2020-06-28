@@ -139,7 +139,7 @@ defmodule Bt.CLI do
           d_code = Wrapper.with_exit_code(fn -> Bluetoothctl.disconnect(mac) end)
           c_code = Wrapper.with_exit_code(fn -> Bluetoothctl.connect(mac) end)
 
-          write_to_the_previous_line(1, String.length(message), status_by_rc(d_code && c_code))
+          write_to_the_previous_line(1, String.length(message), status_by_rc(max(d_code, c_code)))
         else
           IO.puts("Alias '#{context.alias}' does not exist. Use 'bt alias ls' to list aliases")
         end
