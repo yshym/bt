@@ -13,10 +13,16 @@ defmodule Bt.CLI do
   Handling bluetooth devices from the shell
   """)
 
+  @doc """
+  Return status of the command based on the return code
+  """
   @spec status_by_rc(0..255) :: String.t()
   def status_by_rc(0), do: IO.ANSI.green() <> "done" <> IO.ANSI.reset()
   def status_by_rc(_rc), do: IO.ANSI.red() <> "failed" <> IO.ANSI.reset()
 
+  @doc """
+  Write text to the previous line
+  """
   @spec write_to_the_previous_line(integer, integer, String.t()) :: :ok
   def write_to_the_previous_line(line, cursor_position, text) do
     line
