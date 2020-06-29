@@ -24,39 +24,63 @@ defmodule Bt.Bluetoothctl do
     {:ok, state}
   end
 
+  @doc """
+  Connects a device
+  """
   @spec connect(String.t()) :: term
   def connect(device) do
     GenServer.call(__MODULE__, {:connect, device})
   end
 
+  @doc """
+  Disconnects a device
+  """
   @spec disconnect(String.t()) :: term
   def disconnect(device) do
     GenServer.call(__MODULE__, {:disconnect, device})
   end
 
+  @doc """
+  Power on an adapter
+  """
   def on do
     GenServer.cast(__MODULE__, :on)
   end
 
+  @doc """
+  Power off an adapter
+  """
   def off do
     GenServer.cast(__MODULE__, :off)
   end
 
+  @doc """
+  Check if adapter is powered
+  """
   @spec powered? :: bool
   def powered? do
     GenServer.call(__MODULE__, :powered?)
   end
 
+  @doc """
+  Check if device is connected
+  """
   @spec connected?(String.t()) :: bool
   def connected?(device) do
     GenServer.call(__MODULE__, {:connected?, device})
   end
 
+  @doc """
+  Check if any device is connected
+  """
   @spec connected? :: bool
   def connected? do
     GenServer.call(__MODULE__, :connected?)
   end
 
+  @doc """
+  Select an adapter
+  """
   def select(adapter) do
     GenServer.cast(__MODULE__, {:select, adapter})
   end
