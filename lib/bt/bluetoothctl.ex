@@ -201,39 +201,10 @@ defmodule Bt.Bluetoothctl do
     {:noreply, state}
   end
 
-  def handle_info({_port, {:data, data}}, %{from: from, last_command: lc} = state) do
+  def handle_info({_port, {:data, data}}, %{from: from, last_command: last_command} = state) do
     data
     |> String.split(~r"\t|\n|(\r\e\[K)", trim: true)
-    |> Enum.each(fn line ->
-      case line do
-        "Device " <> _device ->
-          parse_devices(data, from)
-
-        "Controller " <> _controller ->
-          if lc == "list", do: parse_adapters(data, from), else: nil
-
-        "Failed to connect: " <> _error ->
-          GenServer.reply(from, 1)
-
-        "Successful disconnected" ->
-          GenServer.reply(from, 0)
-
-        "Connection successful" ->
-          GenServer.reply(from, 0)
-
-        "Powered: " <> powered ->
-          GenServer.reply(from, powered == "yes")
-
-        "Missing device address argument" ->
-          GenServer.reply(from, false)
-
-        "Connected: " <> state ->
-          GenServer.reply(from, state == "yes")
-
-        _ ->
-          nil
-      end
-    end)
+    |> Enum.each(fn line -> handle_info_line(data, line, from, last_command) end)
 
     {:noreply, state}
   end
@@ -254,12 +225,44 @@ defmodule Bt.Bluetoothctl do
     adapters =
       data
       |> Parser.parse_adapters()
-      # |> Enum.map(fn a ->
-      #   select(a.mac)
 
-      #   Map.put(a, :is_powered, powered?())
-      # end)
+    # |> Enum.map(fn a ->
+    #   select(a.mac)
+
+    #   Map.put(a, :is_powered, powered?())
+    # end)
 
     GenServer.reply(from, adapters)
+  end
+
+  def handle_info_line(data, line, from, last_command) do
+    case line do
+      "Device " <> _device ->
+        parse_devices(data, from)
+
+      "Controller " <> _controller ->
+        if last_command == "list", do: parse_adapters(data, from), else: nil
+
+      "Failed to connect: " <> _error ->
+        GenServer.reply(from, 1)
+
+      "Successful disconnected" ->
+        GenServer.reply(from, 0)
+
+      "Connection successful" ->
+        GenServer.reply(from, 0)
+
+      "Powered: " <> powered ->
+        GenServer.reply(from, powered == "yes")
+
+      "Missing device address argument" ->
+        GenServer.reply(from, false)
+
+      "Connected: " <> connected ->
+        GenServer.reply(from, connected == "yes")
+
+      _ ->
+        nil
+    end
   end
 end

@@ -9,9 +9,9 @@ defmodule Bt.Wrapper do
   @spec with_exit_code(fun) :: integer
   def with_exit_code(f) do
     try do
-        f.()
+      f.()
     catch
-        :exit, _ -> 1
+      :exit, _ -> 1
     end
   end
 end

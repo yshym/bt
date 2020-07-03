@@ -191,19 +191,21 @@ defmodule Bt.CLI do
       cond do
         context.action == "ls" or context.action == "list" ->
           adapters
-          |> Enum.map(fn %{
-                           mac: _mac,
-                           name: name,
-                           is_selected: is_selected,
-                           # is_powered: is_powered
-                         } ->
-            on = IO.ANSI.green() <> "●" <> IO.ANSI.reset()
-            off = IO.ANSI.white() <> "●" <> IO.ANSI.reset()
+          |> Enum.map(
+            # is_powered: is_powered
+            fn %{
+                 mac: _mac,
+                 name: name,
+                 is_selected: is_selected
+               } ->
+              on = IO.ANSI.green() <> "●" <> IO.ANSI.reset()
+              off = IO.ANSI.white() <> "●" <> IO.ANSI.reset()
 
-            name
-            # |> Kernel.<>(if is_powered, do: " #{on}", else: " #{off}")
-            |> Kernel.<>(if is_selected, do: " <-", else: "")
-          end)
+              name
+              # |> Kernel.<>(if is_powered, do: " #{on}", else: " #{off}")
+              |> Kernel.<>(if is_selected, do: " <-", else: "")
+            end
+          )
           |> Enum.join("\n")
           |> IO.puts()
 
