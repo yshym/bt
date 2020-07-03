@@ -4,7 +4,7 @@ defmodule Bt.CLI do
   """
 
   use ExCLI.DSL, escript: true
-  alias Bt.{Bluetoothctl, CLI.Config, Parser, Wrapper}
+  alias Bt.{Bluetoothctl, CLI.Config, Wrapper}
 
   name("bt")
   description("Bluetooth CLI")
@@ -162,7 +162,11 @@ defmodule Bt.CLI do
     """)
 
     run _context do
-      Parser.parse_devices()
+      selected_adapter_mac = Config.adapter()
+
+      Bluetoothctl.start_link(selected_adapter_mac)
+
+      Bluetoothctl.devices()
       |> Enum.map(fn {_mac, name} -> name end)
       |> Enum.join("\n")
       |> IO.puts()
@@ -181,30 +185,29 @@ defmodule Bt.CLI do
     argument(:name, default: "")
 
     run context do
+      Bluetoothctl.start_link()
+      adapters = Bluetoothctl.adapters()
+
       cond do
         context.action == "ls" or context.action == "list" ->
-          adapters = Parser.parse_adapters()
-
           adapters
           |> Enum.map(fn %{
                            mac: _mac,
                            name: name,
                            is_selected: is_selected,
-                           is_powered: is_powered
+                           # is_powered: is_powered
                          } ->
             on = IO.ANSI.green() <> "●" <> IO.ANSI.reset()
             off = IO.ANSI.white() <> "●" <> IO.ANSI.reset()
 
             name
-            |> Kernel.<>(if is_powered, do: " #{on}", else: " #{off}")
+            # |> Kernel.<>(if is_powered, do: " #{on}", else: " #{off}")
             |> Kernel.<>(if is_selected, do: " <-", else: "")
           end)
           |> Enum.join("\n")
           |> IO.puts()
 
         context.action == "select" ->
-          adapters = Parser.parse_adapters()
-
           adapter = Enum.find(adapters, &(&1.name == context.name))
 
           if is_nil(adapter) do
@@ -238,7 +241,9 @@ defmodule Bt.CLI do
     argument(:action)
 
     run context do
-      devices = Parser.parse_devices()
+      selected_adapter_mac = Config.adapter()
+      Bluetoothctl.start_link(selected_adapter_mac)
+      devices = Bluetoothctl.devices()
       aliases = Config.aliases()
 
       cond do

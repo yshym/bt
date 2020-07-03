@@ -4,6 +4,7 @@ defmodule Bt.Bluetoothctl do
   """
 
   use GenServer
+  alias Bt.Parser
 
   @spec start_link(String.t() | nil) :: term
   def start_link(adapter \\ nil) do
@@ -18,10 +19,19 @@ defmodule Bt.Bluetoothctl do
     state = %{
       adapter: adapter,
       port: port,
-      from: nil
+      from: nil,
+      last_command: "select"
     }
 
     {:ok, state}
+  end
+
+  def devices do
+    GenServer.call(__MODULE__, :devices)
+  end
+
+  def adapters do
+    GenServer.call(__MODULE__, :adapters)
   end
 
   @doc """
@@ -145,6 +155,28 @@ defmodule Bt.Bluetoothctl do
     {:noreply, state}
   end
 
+  def handle_call(:devices, from, %{port: port} = state) do
+    Port.command(port, "devices\n")
+
+    state =
+      state
+      |> Map.put(:from, from)
+      |> Map.put(:last_command, "devices")
+
+    {:noreply, state}
+  end
+
+  def handle_call(:adapters, from, %{port: port} = state) do
+    Port.command(port, "list\n")
+
+    state =
+      state
+      |> Map.put(:from, from)
+      |> Map.put(:last_command, "list")
+
+    {:noreply, state}
+  end
+
   def handle_cast(:on, %{port: port} = state) do
     Port.command(port, "power on\n")
 
@@ -158,16 +190,28 @@ defmodule Bt.Bluetoothctl do
   end
 
   def handle_cast({:select, adapter}, %{port: port} = state) do
-    Port.command(port, "select #{adapter}\n")
+    Port.command(port, "select #{adapter}\n", [:force])
+
+    state = Map.put(state, :last_command, "select")
 
     {:noreply, state}
   end
 
-  def handle_info({_port, {:data, data}}, %{from: from} = state) do
+  def handle_info({_port, {:data, _data}}, %{last_command: "select"} = state) do
+    {:noreply, state}
+  end
+
+  def handle_info({_port, {:data, data}}, %{from: from, last_command: lc} = state) do
     data
     |> String.split(~r"\t|\n|(\r\e\[K)", trim: true)
     |> Enum.each(fn line ->
       case line do
+        "Device " <> _device ->
+          parse_devices(data, from)
+
+        "Controller " <> _controller ->
+          if lc == "list", do: parse_adapters(data, from), else: nil
+
         "Failed to connect: " <> _error ->
           GenServer.reply(from, 1)
 
@@ -177,8 +221,8 @@ defmodule Bt.Bluetoothctl do
         "Connection successful" ->
           GenServer.reply(from, 0)
 
-        "Powered: " <> state ->
-          GenServer.reply(from, state == "yes")
+        "Powered: " <> powered ->
+          GenServer.reply(from, powered == "yes")
 
         "Missing device address argument" ->
           GenServer.reply(from, false)
@@ -196,5 +240,26 @@ defmodule Bt.Bluetoothctl do
 
   def handle_info({_port, _msg}, state) do
     {:noreply, state}
+  end
+
+  @spec parse_devices(String.t(), GenServer.from()) :: :ok
+  def parse_devices(data, from) do
+    devices = Parser.parse_devices(data)
+
+    GenServer.reply(from, devices)
+  end
+
+  @spec parse_adapters(String.t(), GenServer.from()) :: :ok
+  def parse_adapters(data, from) do
+    adapters =
+      data
+      |> Parser.parse_adapters()
+      # |> Enum.map(fn a ->
+      #   select(a.mac)
+
+      #   Map.put(a, :is_powered, powered?())
+      # end)
+
+    GenServer.reply(from, adapters)
   end
 end
