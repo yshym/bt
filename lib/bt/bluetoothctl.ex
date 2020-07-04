@@ -102,7 +102,10 @@ defmodule Bt.Bluetoothctl do
       ) do
     Port.command(port, "connect #{device}\n")
 
-    state = Map.put(state, :from, from)
+    state =
+      state
+      |> Map.put(:from, from)
+      |> Map.put(:last_command, "connect")
 
     {:noreply, state}
   end
@@ -114,7 +117,10 @@ defmodule Bt.Bluetoothctl do
       ) do
     Port.command(port, "disconnect #{device}\n")
 
-    state = Map.put(state, :from, from)
+    state =
+      state
+      |> Map.put(:from, from)
+      |> Map.put(:last_command, "disconnect")
 
     {:noreply, state}
   end
@@ -126,7 +132,10 @@ defmodule Bt.Bluetoothctl do
       ) do
     Port.command(port, "show\n")
 
-    state = Map.put(state, :from, from)
+    state =
+      state
+      |> Map.put(:from, from)
+      |> Map.put(:last_command, "show")
 
     {:noreply, state}
   end
@@ -138,7 +147,10 @@ defmodule Bt.Bluetoothctl do
       ) do
     Port.command(port, "info #{device}\n")
 
-    state = Map.put(state, :from, from)
+    state =
+      state
+      |> Map.put(:from, from)
+      |> Map.put(:last_command, "info")
 
     {:noreply, state}
   end
@@ -150,7 +162,10 @@ defmodule Bt.Bluetoothctl do
       ) do
     Port.command(port, "info\n")
 
-    state = Map.put(state, :from, from)
+    state =
+      state
+      |> Map.put(:from, from)
+      |> Map.put(:last_command, "info")
 
     {:noreply, state}
   end
@@ -180,11 +195,15 @@ defmodule Bt.Bluetoothctl do
   def handle_cast(:on, %{port: port} = state) do
     Port.command(port, "power on\n")
 
+    state = Map.put(state, :last_command, "power on")
+
     {:noreply, state}
   end
 
   def handle_cast(:off, %{port: port} = state) do
     Port.command(port, "power off\n")
+
+    state = Map.put(state, :last_command, "power off")
 
     {:noreply, state}
   end
@@ -213,6 +232,44 @@ defmodule Bt.Bluetoothctl do
     {:noreply, state}
   end
 
+  @spec handle_info_line(String.t(), String.t(), GenServer.from(), String.t()) ::
+          :ok | map | list | nil
+  def handle_info_line(_data, "Failed to connect: " <> _error, from, _last_command) do
+    GenServer.reply(from, 1)
+  end
+
+  def handle_info_line(_data, "Successful disconnected", from, _last_command) do
+    GenServer.reply(from, 0)
+  end
+
+  def handle_info_line(_data, "Connection successfull", from, _last_command) do
+    GenServer.reply(from, 0)
+  end
+
+  def handle_info_line(data, "Device " <> _device, from, _last_command) do
+    parse_devices(data, from)
+  end
+
+  def handle_info_line(data, "Controller " <> _controller, from, "list") do
+    parse_adapters(data, from)
+  end
+
+  def handle_info_line(_data, "Missing device address argument", from, _last_command) do
+    GenServer.reply(from, false)
+  end
+
+  def handle_info_line(_data, "Powered: " <> powered, from, _last_command) do
+    GenServer.reply(from, powered == "yes")
+  end
+
+  def handle_info_line(_data, "Connected: " <> connected, from, _last_command) do
+    GenServer.reply(from, connected == "yes")
+  end
+
+  def handle_info_line(_data, _line, _from, _last_command) do
+    nil
+  end
+
   @spec parse_devices(String.t(), GenServer.from()) :: :ok
   def parse_devices(data, from) do
     devices = Parser.parse_devices(data)
@@ -233,36 +290,5 @@ defmodule Bt.Bluetoothctl do
     # end)
 
     GenServer.reply(from, adapters)
-  end
-
-  def handle_info_line(data, line, from, last_command) do
-    case line do
-      "Device " <> _device ->
-        parse_devices(data, from)
-
-      "Controller " <> _controller ->
-        if last_command == "list", do: parse_adapters(data, from), else: nil
-
-      "Failed to connect: " <> _error ->
-        GenServer.reply(from, 1)
-
-      "Successful disconnected" ->
-        GenServer.reply(from, 0)
-
-      "Connection successful" ->
-        GenServer.reply(from, 0)
-
-      "Powered: " <> powered ->
-        GenServer.reply(from, powered == "yes")
-
-      "Missing device address argument" ->
-        GenServer.reply(from, false)
-
-      "Connected: " <> connected ->
-        GenServer.reply(from, connected == "yes")
-
-      _ ->
-        nil
-    end
   end
 end
