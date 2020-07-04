@@ -3,7 +3,7 @@ defmodule Bt.Parser do
   Parser for output of some bluetoothctl commands
   """
 
-  alias Bt.CLI.Config
+  alias Bt.{CLI.Config, Bluetoothctl}
 
   @spec parse_devices(String.t()) :: map
   def parse_devices(data) do
@@ -21,9 +21,12 @@ defmodule Bt.Parser do
     |> Enum.into(%{})
   end
 
-  @spec parse_adapters(String.t()) :: list
-  def parse_adapters(data) do
-    data
+  @spec parse_adapters :: list
+  def parse_adapters do
+    selected_mac = Config.adapter()
+    Bluetoothctl.start_link()
+
+    Bluetoothctl.adapters_data()
     |> String.split("\n", trim: true)
     |> Enum.filter(&String.starts_with?(&1, "Controller"))
     |> Enum.reduce(
@@ -31,13 +34,15 @@ defmodule Bt.Parser do
       fn x, acc ->
         [_, mac, name, _text] = String.split(x, " ")
 
-        selected_mac = Config.adapter()
+        Bluetoothctl.select(mac)
+        is_powered = Bluetoothctl.powered?()
 
         map =
           %{}
           |> Map.put(:mac, mac)
           |> Map.put(:name, name)
           |> Map.put(:is_selected, mac == selected_mac)
+          |> Map.put(:is_powered, is_powered)
 
         acc ++ [map]
       end
