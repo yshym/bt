@@ -242,7 +242,7 @@ defmodule Bt.Bluetoothctl do
     GenServer.reply(from, 0)
   end
 
-  def handle_info_line(_data, "Connection successfull", from, _last_command) do
+  def handle_info_line(_data, "Connection successful", from, _last_command) do
     GenServer.reply(from, 0)
   end
 
