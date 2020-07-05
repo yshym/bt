@@ -6,7 +6,7 @@ defmodule Bt.MixProject do
   def project do
     [
       app: @app,
-      version: "0.2.7",
+      version: "0.2.8",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       escript: escript(),
