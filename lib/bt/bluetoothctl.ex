@@ -26,6 +26,10 @@ defmodule Bt.Bluetoothctl do
     {:ok, state}
   end
 
+  def stop do
+    GenServer.stop(__MODULE__)
+  end
+
   def devices do
     GenServer.call(__MODULE__, :devices)
   end

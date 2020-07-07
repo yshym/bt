@@ -26,27 +26,32 @@ defmodule Bt.Parser do
     selected_mac = Config.adapter()
     Bluetoothctl.start_link()
 
-    Bluetoothctl.adapters_data()
-    |> String.split("\n", trim: true)
-    |> Enum.filter(&String.starts_with?(&1, "Controller"))
-    |> Enum.reduce(
-      [],
-      fn x, acc ->
-        [_, mac, name, _text] = String.split(x, " ")
+    adapters =
+      Bluetoothctl.adapters_data()
+      |> String.split("\n", trim: true)
+      |> Enum.filter(&String.starts_with?(&1, "Controller"))
+      |> Enum.reduce(
+        [],
+        fn x, acc ->
+          [_, mac, name, _text] = String.split(x, " ")
 
-        Bluetoothctl.select(mac)
-        is_powered = Bluetoothctl.powered?()
+          Bluetoothctl.select(mac)
+          is_powered = Bluetoothctl.powered?()
 
-        map =
-          %{}
-          |> Map.put(:mac, mac)
-          |> Map.put(:name, name)
-          |> Map.put(:is_selected, mac == selected_mac)
-          |> Map.put(:is_powered, is_powered)
+          map =
+            %{}
+            |> Map.put(:mac, mac)
+            |> Map.put(:name, name)
+            |> Map.put(:is_selected, mac == selected_mac)
+            |> Map.put(:is_powered, is_powered)
 
-        acc ++ [map]
-      end
-    )
-    |> Enum.sort_by(& &1.name)
+          [map | acc]
+        end
+      )
+      |> Enum.sort_by(& &1.name)
+
+    Bluetoothctl.stop()
+
+    adapters
   end
 end
