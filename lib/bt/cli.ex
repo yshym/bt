@@ -188,7 +188,7 @@ defmodule Bt.CLI do
       adapters = Parser.parse_adapters()
 
       cond do
-        context.action == "ls" or context.action == "list" ->
+        context.action in ["list", "ls"] ->
           adapters
           |> Enum.map(fn %{
                            mac: _mac,
@@ -219,7 +219,7 @@ defmodule Bt.CLI do
             Config.write_adapter(mac)
           end
 
-        context.action == "on" or context.action == "off" ->
+        context.action in ["on", "off"] ->
           selected_mac = Config.adapter()
           Bluetoothctl.start_link(selected_mac)
           apply(Bluetoothctl, String.to_atom(context.action), [])
@@ -246,7 +246,7 @@ defmodule Bt.CLI do
       aliases = Config.aliases()
 
       cond do
-        context.action == "ls" or context.action == "list" ->
+        context.action in ["list", "ls"] ->
           aliases
           |> Enum.map(fn {name, mac} ->
             "#{name} -> #{devices[mac]}"
