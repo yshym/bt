@@ -185,7 +185,6 @@ defmodule Bt.CLI do
     argument(:name, default: "")
 
     run context do
-      Bluetoothctl.start_link()
       adapters = Parser.parse_adapters()
 
       cond do
