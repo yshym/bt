@@ -1,0 +1,46 @@
+#+TITLE: Bt
+
+#+BEGIN_QUOTE
+Convenient wrapper around bluetoothctl
+#+END_QUOTE
+
+[[https://img.shields.io/hexpm/v/bt][https://hex.pm/packages/bt]]
+
+* Table of contents :TOC_2:
+- [[#installation][Installation]]
+- [[#usage][Usage]]
+
+* Installation
+1. Add `$HOME/.mix/escripts` to your `PATH` variable
+2. Use `mix escript.install hex bt` to install escript
+
+* Usage
+1. List devices
+  #+BEGIN_EXAMPLE
+    $ bt devices
+
+    AirPods
+  #+END_EXAMPLE
+
+1. Add new alias
+  #+BEGIN_EXAMPLE
+    $ bt alias add
+
+    1. AirPods
+    Select device: 1
+    Enter alias: a
+  #+END_EXAMPLE
+
+2. List your aliases
+  #+BEGIN_EXAMPLE
+    $ bt alias ls
+
+    a -> AirPods
+  #+END_EXAMPLE
+
+3. Connect
+  #+BEGIN_EXAMPLE
+    $ bt con a
+
+    Trying to connect... done
+  #+END_EXAMPLE
