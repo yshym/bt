@@ -55,17 +55,31 @@ defmodule Bt.Bluetoothctl do
   end
 
   @doc """
-  Power on an adapter
+  Power on selected adapter
   """
   def on do
     GenServer.cast(__MODULE__, :on)
   end
 
   @doc """
-  Power off an adapter
+  Power on an adapter
+  """
+  def on(adapter) do
+    GenServer.cast(__MODULE__, {:on, adapter})
+  end
+
+  @doc """
+  Power off selected adapter
   """
   def off do
     GenServer.cast(__MODULE__, :off)
+  end
+
+  @doc """
+  Power off an adapter
+  """
+  def off(adapter) do
+    GenServer.cast(__MODULE__, {:off, adapter})
   end
 
   @doc """
@@ -204,7 +218,25 @@ defmodule Bt.Bluetoothctl do
     {:noreply, state}
   end
 
+  def handle_cast({:on, adapter}, %{port: port} = state) do
+    Port.command(port, "select #{adapter}\n")
+    Port.command(port, "power on\n")
+
+    state = Map.put(state, :last_command, "power on")
+
+    {:noreply, state}
+  end
+
   def handle_cast(:off, %{port: port} = state) do
+    Port.command(port, "power off\n")
+
+    state = Map.put(state, :last_command, "power off")
+
+    {:noreply, state}
+  end
+
+  def handle_cast({:off, adapter}, %{port: port} = state) do
+    Port.command(port, "select #{adapter}\n")
     Port.command(port, "power off\n")
 
     state = Map.put(state, :last_command, "power off")

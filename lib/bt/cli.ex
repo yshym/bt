@@ -222,7 +222,20 @@ defmodule Bt.CLI do
         context.action in ["on", "off"] ->
           selected_mac = Config.adapter()
           Bluetoothctl.start_link(selected_mac)
-          apply(Bluetoothctl, String.to_atom(context.action), [])
+
+          args =
+            if is_nil(context.name) do
+              []
+            else
+              mac =
+                adapters
+                |> Enum.find(&(&1.name == context.name))
+                |> Map.get(:mac)
+
+              [mac]
+            end
+
+          apply(Bluetoothctl, String.to_atom(context.action), args)
 
         true ->
           IO.puts("Action '#{context.action}' does not exist")
