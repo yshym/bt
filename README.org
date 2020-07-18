@@ -9,6 +9,10 @@ Convenient wrapper around bluetoothctl
 * Table of contents :TOC_2:
 - [[#installation][Installation]]
 - [[#usage][Usage]]
+  - [[#list-devices][List devices]]
+  - [[#add-new-alias][Add new alias]]
+  - [[#list-your-aliases][List your aliases]]
+  - [[#connect][Connect]]
 
 * Installation
 1. Add ~$HOME/.mix/escripts~ to your ~PATH~ variable
@@ -17,35 +21,33 @@ Convenient wrapper around bluetoothctl
 mix escript.install hex bt
 #+END_SRC
 
-#+RESULTS:
-
 * Usage
-1. List devices
-  #+BEGIN_EXAMPLE
-  $ bt devices
+** List devices
+#+BEGIN_EXAMPLE
+$ bt devices
 
-  AirPods
-  #+END_EXAMPLE
+AirPods
+#+END_EXAMPLE
 
-2. Add new alias
-  #+BEGIN_EXAMPLE
-  $ bt alias add
+** Add new alias
+#+BEGIN_EXAMPLE
+$ bt alias add
 
-  1. AirPods
-  Select device: 1
-  Enter alias: a
-  #+END_EXAMPLE
+1. AirPods
+Select device: 1
+Enter alias: a
+#+END_EXAMPLE
 
-3. List your aliases
-  #+BEGIN_EXAMPLE
-  $ bt alias ls
+** List your aliases
+#+BEGIN_EXAMPLE
+$ bt alias ls
 
-  a -> AirPods
-  #+END_EXAMPLE
+a -> AirPods
+#+END_EXAMPLE
 
-4. Connect
-  #+BEGIN_EXAMPLE
-  $ bt con a
+** Connect
+#+BEGIN_EXAMPLE
+$ bt con a
 
-  Trying to connect... done
-  #+END_EXAMPLE
+Trying to connect... done
+#+END_EXAMPLE
