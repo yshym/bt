@@ -21,31 +21,31 @@ mix escript.install hex bt
 
 * Usage
 1. List devices
-#+BEGIN_EXAMPLE
-$ bt devices
+  #+BEGIN_EXAMPLE
+  $ bt devices
 
-AirPods
-#+END_EXAMPLE
+  AirPods
+  #+END_EXAMPLE
 
 2. Add new alias
-#+BEGIN_EXAMPLE
-$ bt alias add
+  #+BEGIN_EXAMPLE
+  $ bt alias add
 
-3. AirPods
-Select device: 1
-Enter alias: a
-#+END_EXAMPLE
+  1. AirPods
+  Select device: 1
+  Enter alias: a
+  #+END_EXAMPLE
 
-4. List your aliases
-#+BEGIN_EXAMPLE
-$ bt alias ls
+3. List your aliases
+  #+BEGIN_EXAMPLE
+  $ bt alias ls
 
-a -> AirPods
-#+END_EXAMPLE
+  a -> AirPods
+  #+END_EXAMPLE
 
-5. Connect
-#+BEGIN_EXAMPLE
-$ bt con a
+4. Connect
+  #+BEGIN_EXAMPLE
+  $ bt con a
 
-Trying to connect... done
-#+END_EXAMPLE
+  Trying to connect... done
+  #+END_EXAMPLE
