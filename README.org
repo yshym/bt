@@ -4,7 +4,7 @@
 Convenient wrapper around bluetoothctl
 #+END_QUOTE
 
-[[https://img.shields.io/hexpm/v/bt][https://hex.pm/packages/bt]]
+[[https://hex.pm/packages/bt][https://img.shields.io/hexpm/v/bt]]
 
 * Table of contents :TOC_2:
 - [[#installation][Installation]]
@@ -16,31 +16,31 @@ Convenient wrapper around bluetoothctl
 
 * Usage
 1. List devices
-  #+BEGIN_EXAMPLE
-    $ bt devices
+#+BEGIN_EXAMPLE
+$ bt devices
 
-    AirPods
-  #+END_EXAMPLE
+AirPods
+#+END_EXAMPLE
 
 1. Add new alias
-  #+BEGIN_EXAMPLE
-    $ bt alias add
+#+BEGIN_EXAMPLE
+$ bt alias add
 
-    1. AirPods
-    Select device: 1
-    Enter alias: a
-  #+END_EXAMPLE
+1. AirPods
+Select device: 1
+Enter alias: a
+#+END_EXAMPLE
 
 2. List your aliases
-  #+BEGIN_EXAMPLE
-    $ bt alias ls
+#+BEGIN_EXAMPLE
+$ bt alias ls
 
-    a -> AirPods
-  #+END_EXAMPLE
+a -> AirPods
+#+END_EXAMPLE
 
 3. Connect
-  #+BEGIN_EXAMPLE
-    $ bt con a
+#+BEGIN_EXAMPLE
+$ bt con a
 
-    Trying to connect... done
-  #+END_EXAMPLE
+Trying to connect... done
+#+END_EXAMPLE
