@@ -313,19 +313,4 @@ defmodule Bt.Bluetoothctl do
 
     GenServer.reply(from, devices)
   end
-
-  # @spec parse_adapters(String.t(), GenServer.from()) :: :ok
-  # def parse_adapters(data, from) do
-  #   adapters =
-  #     data
-  #     |> Parser.parse_adapters()
-
-  #   # |> Enum.map(fn a ->
-  #   #   select(a.mac)
-
-  #   #   Map.put(a, :is_powered, powered?())
-  #   # end)
-
-  #   GenServer.reply(from, adapters)
-  # end
 end
