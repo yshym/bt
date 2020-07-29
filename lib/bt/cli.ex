@@ -166,7 +166,9 @@ defmodule Bt.CLI do
 
       Bluetoothctl.start_link(selected_adapter_mac)
 
-      Bluetoothctl.devices()
+      devices = Wrapper.with_default_value(fn -> Bluetoothctl.devices() end, [])
+
+      devices
       |> Enum.map(fn {_mac, name} -> name end)
       |> Enum.join("\n")
       |> IO.puts()
@@ -255,10 +257,13 @@ defmodule Bt.CLI do
     run context do
       selected_adapter_mac = Config.adapter()
       Bluetoothctl.start_link(selected_adapter_mac)
-      devices = Bluetoothctl.devices()
+      devices = Wrapper.with_default_value(fn -> Bluetoothctl.devices() end, [])
       aliases = Config.aliases()
 
       cond do
+        devices == [] ->
+          IO.puts("You don't have any devices")
+
         context.action in ["list", "ls"] ->
           aliases
           |> Enum.map(fn {name, mac} ->

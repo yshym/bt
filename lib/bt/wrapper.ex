@@ -14,4 +14,16 @@ defmodule Bt.Wrapper do
       :exit, _ -> 1
     end
   end
+
+  @doc """
+  Return default value if function exits
+  """
+  @spec with_default_value(fun, term) :: term
+  def with_default_value(f, v) do
+    try do
+      f.()
+    catch
+      :exit, _ -> v
+    end
+  end
 end
