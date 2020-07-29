@@ -1,10 +1,10 @@
 #+TITLE: Bt
 
+[[https://hex.pm/packages/bt][https://img.shields.io/hexpm/v/bt?.svg]]
+
 #+BEGIN_QUOTE
 Convenient wrapper around bluetoothctl
 #+END_QUOTE
-
-[[https://hex.pm/packages/bt][https://img.shields.io/hexpm/v/bt?.svg]]
 
 * Table of contents :TOC_2:
 - [[#installation][Installation]]
